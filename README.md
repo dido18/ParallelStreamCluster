@@ -44,6 +44,15 @@ parsecmgmt -a run -p streamcluster  //use simple test suite
 parsecmgmt -a run -p streamcluster -i simlarge
 ```
 
+for removing all the compiled files
+```
+parsecmgmt -a uninstall -p streamCluster
+```
+builds and compiles stream luster
+```
+parsecmgmt -a build -p streamcluster
+``
+
 #### Structure of Parsec benchmark
 PARSEC folder has the following structure:
 ```

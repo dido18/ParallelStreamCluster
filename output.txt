@@ -1,0 +1,3 @@
+weigth: 10.000000 
+coordinates: 0.420158 
+

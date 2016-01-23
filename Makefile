@@ -10,7 +10,7 @@ INCLUDES	= -I $(FF_ROOT)
 CXXFLAGS  	=
 
 LDFLAGS 	= -pthread
-OPTFLAGS	= -O3 -finline-functions -DNDEBUG
+OPTFLAGS	= -O3 -finline-functions -DNDEBUG  -DPRINTINFO
 
 TARGETS		= ff_stream_cluster
 
