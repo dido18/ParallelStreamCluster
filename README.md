@@ -51,7 +51,23 @@ parsecmgmt -a uninstall -p streamCluster
 builds and compiles stream luster
 ```
 parsecmgmt -a build -p streamcluster
-``
+```
+
+### Output prsec
+The output of the streamparallel in PARSEC with **test** imput is a list of centers found:
+
+```
+3			// ID center (first)
+6.000000		// weight of  the center
+0.231290 		// coordinata of the center (in this case one)
+
+6
+4.000000
+0.785309 
+
+
+```
+
 
 #### Structure of Parsec benchmark
 PARSEC folder has the following structure:
