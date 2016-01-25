@@ -1,8 +1,10 @@
 
 # folder
 images/
-parsec_rodinia/
+rodinia_streamcluster/
 parsec_streamcluster/
+bin/
+run/
 
 
 # Compiled Object files

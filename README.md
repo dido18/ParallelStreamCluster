@@ -63,7 +63,7 @@ The output of the streamparallel in PARSEC with **test** imput is a list of cent
 
 6
 4.000000
-0.785309 
+0.785309
 
 
 ```
@@ -110,4 +110,27 @@ usage: ./streamcluster k1 k2 d n chunksize clustersize infile outfile nproc
   nproc:       Number of threads to use
 
 if n > 0, points will be randomly generated instead of reading from infile.
+```
+
+# StreamCLuster function to be parallelized
+
+
+```
+void streamCluster( stream,kmin,  kmax, dim, chunksize, centersize, char* outfile ){
+
+init centers[centersize]
+init points[chunksize]
+
+while(EndOfStream){
+	reads chuncksize points and put into points[]
+   selects k centers  in points[] (localsearch() uses pgain()) //data parallel
+	update weight for the k clusters (contcenters())
+	if( k + len(center) > centersize)
+		exit no more space for centers.
+	else
+		add k centers to centers[]
+}
+
+select k centers from centers[].
+}
 ```
