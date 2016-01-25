@@ -5,8 +5,8 @@
 # FF_ROOT     pointing to the FastFlow root directory (i.e. the one containing the ff directory).
 FF_ROOT		= /home/dido-ubuntu/fastflow
 
-# prefix of the project directory 
-PREFIX          = /home/dido-ubuntu/github/ParallelStreamCluster
+# prefix of the project directory
+#PREFIX          = /home/dido-ubuntu/github/ParallelStreamCluster
 
 CXX		= g++ -std=c++11 -DNO_DEFAULT_MAPPING
 INCLUDES	= -I $(FF_ROOT)
@@ -24,12 +24,13 @@ TARGETS		= ff_stream_cluster
 %: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OPTFLAGS) -o $@ $< $(LDFLAGS)
 
-all		: $(TARGETS)
+all		: $(TARGETS) install
+
 clean		:
 	rm -f $(TARGETS)
 cleanall	: clean
 	\rm -f *.o *~
 
 install:
-	mkdir -p $(PREFIX)/bin
-	cp -f $(TARGETS) $(PREFIX)/bin/$(TARGETS)
+	mkdir -p ./bin
+	mv -f $(TARGETS) ./bin/$(TARGETS)
