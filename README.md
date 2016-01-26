@@ -8,32 +8,52 @@ The student must develop a parallel version of the application using [FastFlow](
 The project must be developed with:
 - processes and COW (cluster of workstation computation)
 
-### Workflow
 
-A valid project is the result of the execution of an ordered set of steps:
+## StreamCLuster() function
 
-1. the student must agree the subject with the professor, and the pairing student-project has to be published on the project assignment table (agreement should go through an email to the professor with subject “SPM project”)
 
-2. the project design has to be completed and agreed again with the professor
-3. the project implementation has to be completed, debugged and validated
-4. the project (source code, sample input files and report describing what has been actually produced) has to be submitted by one of the exam terms via email to professor email account
-5. the project has be demonstrated (on a text terminal) and discussed with the professor
-Project code
+```
+void streamCluster( stream,kmin,  kmax, dim, chunksize, centersize, char* outfile ){
 
-Project code should be delivered to the professor email account as a compressed archive (.zip or .tar.gz)
+init centers[centersize]
+init points[chunksize]
 
-### Project report
+while(EndOfStream){
+	reads chuncksize points and put into points[]
+   selects k centers  in points[] (localsearch() uses pgain()) //data parallel
+	update weight for the k clusters (contcenters())
+	if( k + len(center) > centersize)
+		exit no more space for centers.
+	else
+		add k centers to centers[]
+}
 
-The project report is a PDF document of no more than 10 pages explaining:
+selects k centers from centers[] with localSearc().
+}
+```
 
-what has actually been implemented in the project
-possible major design choices
-a short manual detailing how the project may be compiled and tested from the sources
-experimental results validating design and performances
+### pgain function
+- The program spends most of its time evaluating the
+gain of opening a new center. This operation uses a paral-
+lelization scheme which employs static partitioning of data
+points.
+- The parallel gain computation is implemented in function
+`pgain`. Given a preliminary solution, the function computes
+how much cost can be saved by opening a new center. For
+every new point, it weighs the cost of making it a new center
+and reassigning some of the existing points to it against the
+savings caused by minimizing the distance between points.
 
-# PARSEC framework
 
-For running the **streamcluster** application with the parsec benchmark use the command belove.
+`double pgain(long x, Points *points, double z, long int *numcenters, int pid, pthread_barrier_t* barrier)
+`
+If the heuristic determines that the change would be advantageous the
+results are committed.
+
+
+# PARSEC framework - streamcluster
+
+For running the **streamcluster** application with the PARSEC benchmark use the command belove.
 
 You must use the `/bin/bash` shell in order to have the variables environment.
 ````
@@ -53,7 +73,7 @@ builds and compiles stream luster
 parsecmgmt -a build -p streamcluster
 ```
 
-### Output prsec
+### Output parsec
 The output of the streamparallel in PARSEC with **test** imput is a list of centers found:
 
 ```
@@ -110,27 +130,4 @@ usage: ./streamcluster k1 k2 d n chunksize clustersize infile outfile nproc
   nproc:       Number of threads to use
 
 if n > 0, points will be randomly generated instead of reading from infile.
-```
-
-# StreamCLuster function to be parallelized
-
-
-```
-void streamCluster( stream,kmin,  kmax, dim, chunksize, centersize, char* outfile ){
-
-init centers[centersize]
-init points[chunksize]
-
-while(EndOfStream){
-	reads chuncksize points and put into points[]
-   selects k centers  in points[] (localsearch() uses pgain()) //data parallel
-	update weight for the k clusters (contcenters())
-	if( k + len(center) > centersize)
-		exit no more space for centers.
-	else
-		add k centers to centers[]
-}
-
-select k centers from centers[].
-}
 ```
