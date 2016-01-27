@@ -1,10 +1,10 @@
-///Copyright (c) 2006-2009 Princeton University
+//Copyright (c) 2006-2009 Princeton University
 //All rights reserved.
 
-//Redistribution and use in source and binary forms, with or withou
-//modification, are permitted provided that the following conditions are 
+//Redistribution and use in source and binary forms, with or without
+//modification, are permitted provided that the following conditions are met:
 //    * Redistributions of source code must retain the above copyright
-//      notice, this list of conditions and the following disclaimer
+//      notice, this list of conditions and the following disclaimer.
 //    * Redistributions in binary form must reproduce the above copyright
 //      notice, this list of conditions and the following disclaimer in the
 //      documentation and/or other materials provided with the distribution.
@@ -24,16 +24,13 @@
 //SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-// fastflow
-#include <ff/farm.hpp>
-#include <ff/pipeline.hpp>
+
 
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
 #include <sys/time.h>
-
 #include <string.h>
 #include <assert.h>
 #include <math.h>
@@ -45,8 +42,6 @@
 #endif
 
 using namespace std;
-
-using namespace ff;
 
 #define MAXNAMESIZE 1024 // max filename length
 #define SEED 1
@@ -60,48 +55,28 @@ using namespace ff;
 #define ITER 3 // iterate ITER* k log k times; ITER >= 1
 
 //#define PRINTINFO //comment this out to disable output
-//#define PROFILE // comment this out to disable instrumentation code
+#define PROFILE // comment this out to disable instrumentation code
 //#define ENABLE_THREADS  // comment this out to disable threads
 //#define INSERT_WASTE //uncomment this to insert waste computation into dist function
 
 #define CACHE_LINE 512 // cache line in byte
 
-
-//#####################   my point definition
-struct Point{
-  Point(){} //default constructor
-  float weight;  float *coord;
-  long assign;  // number of point where this one is assigned 
-  float cost;  // cost of that assignment, weight*distance 
-};
-
-// this is the array of points 
-struct Points {
-  Points(int d, long n, Point* const  point):num(n),dim(d),p(point){}
-
-  long num; // number of points; may not be N if this is a sample 
-  int dim;  // dimensionality 
-  Point * const p; // the array itself 
-};
-
-
-/*
-// this structure represents a point
-/ these will be passed around to avoid copying coordinates
+/* this structure represents a point */
+/* these will be passed around to avoid copying coordinates */
 typedef struct {
   float weight;
   float *coord;
-  long assign;  // number of point where this one is assigned
-  float cost;  // cost of that assignment, weight*distance
+  long assign;  /* number of point where this one is assigned */
+  float cost;  /* cost of that assignment, weight*distance */
 } Point;
 
-// this is the array of points
+/* this is the array of points */
 typedef struct {
-  long num; // number of points; may not be N if this is a sample
-  int dim;  // dimensionality
-  Point *p; // the array itself
+  long num; /* number of points; may not be N if this is a sample */
+  int dim;  /* dimensionality */
+  Point *p; /* the array itself */
 } Points;
-*/
+
 static bool *switch_membership; //whether to switch membership in pgain
 static bool* is_center; //whether a point is a center
 static int* center_table; //index table of centers
@@ -1129,9 +1104,6 @@ void outcenterIDs( Points* centers, long* centerIDs, char* outfile ) {
   fclose(fp);
 }
 
-
-/*
-//################################## STREAM CLUSTER ######################
 void streamCluster( PStream* stream,
 		    long kmin, long kmax, int dim,
 		    long chunksize, long centersize, char* outfile )
@@ -1223,176 +1195,6 @@ void streamCluster( PStream* stream,
   contcenters(&centers);
   outcenterIDs( &centers, centerIDs, outfile);
 }
-/#############################    end STREMCLUSTER ################################### 
-*/
-
-
-// Emitter
-struct EmitterChunks:ff_node_t<Points>{
-
-  EmitterChunks(PStream *Stream, long cksize, long d): stream(Stream), chunksize(cksize), dim(d){}
-
-  Points *svc (Points *){ //  it will receive the streams from the external source
-
-    float* block = (float*)malloc(chunksize*dim*sizeof(float) );
-    //float* centerBlock = (float*)malloc(centersize*dim*sizeof(float) );
-    //long* centerIDs = (long*)malloc(centersize*dim*sizeof(long));
-
-    if( block == NULL ) {
-      fprintf(stderr,"not enough memory for a chunk!\n");
-      exit(1);
-    }
-
-    // Point * p = (Point *)malloc(chunksize*sizeof(Point));
-    Point * const p = new Point[chunksize];
-    Points *points = new Points(dim, chunksize, p);
-
-    for( int i = 0; i < chunksize; i++ ) {
-      (points->p[i]).coord = &block[i*dim];
-    }
-
-    while(1){
-          size_t numRead  = stream->read(block, dim, chunksize);
-
-      	  if(numRead==0) {
-      	    return EOS;
-      	  }
-      	  fprintf(stderr,"\n Emitter read %zu points\n", numRead);
-
-      	  if( stream->ferror() || numRead < (unsigned int)chunksize && !stream->feof() ) {
-      	    fprintf(stderr, "error reading data!\n");
-      	    return(EOS);
-      	  }
-
-      	  points->num = numRead;
-      	  for( int i = 0; i < points->num; i++ ) {
-      	    points->p[i].weight = 1.0;
-      	  }
-
-      	  ff_send_out(points);
-          }//end strem
-        return EOS;
-  } // end svc method
-
-  long chunksize;
-  int dim;
-  PStream *stream;
-};
-
-
-// worker
-
-/* worker receive a chunk and produce k centers of the chunk received.*/
-struct Worker:ff_node_t<Points>{
-  
-  Worker(int d, long kMIN, long kMAX, long centersz ): dim(d),kmin(kMIN),kmax(kMAX),centersize(centersz){} 
-
-  Points *svc(Points* points){
-    std::cout << "The worker " << get_my_id()<<" has received a chunk with " << points->num << " points " <<" \n";
-
-    float* centerBlock = (float*)malloc(centersize*dim*sizeof(float) );
-    long* centerIDs = (long*)malloc(centersize*dim*sizeof(long));
-
-    Point *p = (Point *)malloc(centersize*sizeof(Point));
-    Points *centers = new Points(dim, 0, p);  //num=0  zero centers initially
-
-    for( int i = 0; i< centersize; i++ ) {
-      centers->p[i].coord = &centerBlock[i*dim];
-      centers->p[i].weight = 1.0;
-    }
-    
-    switch_membership = (bool*)malloc(points->num*sizeof(bool));
-    is_center = (bool*)calloc(points->num,sizeof(bool));
-    center_table = (int*)malloc(points->num*sizeof(int));
-
-   /* localSearch  of kmediam on the chunk received*/
-   long IDoffset = 0; // IDoffset +=numRead ,in official algorithm it is used to update centeID[k]= i+IDoffset  in copy center
-   long kfinal;
-
-   localSearch(points, kmin, kmax, &kfinal);
-
-#ifdef PRINTINFO
-   std::cout << "The worker " << get_my_id()<<" finish local search with  kfinal " << kfinal<<" centroids founded \n";    
-#endif
-
-
-   contcenters(points);
-   if( kfinal + centers->num > centersize ) {
-      //here we don't handle the situation where # of centers gets too large. 
-      fprintf(stderr,"oops! no more space for centers\n");
-      return(EOS); //exit(1);compile
-
-    }
-
-#ifdef PRINTINFO
-    printf("finish cont center\n");
-#endif
-    copycenters(points, centers, centerIDs, IDoffset); //copy points to point to centers.
-
-    //  IDoffset += numRead;  // maybe needed: for reading the id of the centers in file source stream
-#ifdef PRINTINFO
-    printf("finish copy centers\n"); 
-#endif
-
-
-   free(is_center);
-   free(switch_membership);
-   free(center_table);
-
-   /* send the K centers found to the collector*/
-   ff_send_out(centers);
-   std::cout << "The worker " << get_my_id()<<" has sent the conters founded \n";
-   return (Points*)GO_ON;
-  }
-
-  int dim;
-  long kmin;
-  long kmax;
-  long centersize;
-};
-
-/// collector
-
-void printPoints( Points *points){
-
-  for(int i=0; i < points->num; ++i){
-    std::cout << "Point n° "<< i << " coord: ";
-    for(int k=0; k< points->dim; ++k){
-    std:cout << points->p[i].coord[k] <<" ";
-    }
-    std::cout<< "\n\n";
-  }
-
-}
-
-struct lastStage:ff_minode_t<Points> { // NOTE multi-input node
-  
-  lastStage( long kMIN, long kMAX, char* out):kmin(kMIN),kmax(kMAX), outfile(out){}
-
-  Points* svc(Points * centers){
-    std::cout << "The Collector " << get_my_id()<<" has received a the centers  points \n";
-
-    long kfinal;// = centers->num; // to be verified
-
-    switch_membership = (bool*)malloc(centers->num*sizeof(bool));
-    is_center = (bool*)calloc(centers->num,sizeof(bool));
-    center_table = (int*)malloc(centers->num*sizeof(int));
-
-    localSearch(centers, kmin, kmax , &kfinal ); // parallel
-    contcenters(centers);
-    //    outcenterIDs( centers, centerIDs, outfile);
-    printPoints(centers);
-
-    delete centers;
-    return GO_ON;
-
-  }
-  
-  long kmin,kmax;
- char * outfile;
-} ;
-
-
 
 int main(int argc, char **argv)
 {
@@ -1449,30 +1251,6 @@ int main(int argc, char **argv)
     stream = new FileStream(infilename);
   }
 
-  // farm declaration
-  EmitterChunks emitter(stream, chunksize, dim);
-
-  std::vector<std::unique_ptr<ff_node>> Workers;
-  for( int i=0; i<nproc; ++i){
-    Workers.push_back(make_unique<Worker>(dim,kmin,kmax,clustersize));  //(int d, long kMIN, long kMAX, long centersz )
-  }
-
-  ff_Farm<Points> myFarm (std::move(Workers),emitter);
-
-  myFarm.remove_collector(); // remove the default collector..
-
-  lastStage collector(kmin,kmax,outfilename);
-  ff_Pipe<Points> pipe(myFarm,collector);
-
-  if (pipe.run_and_wait_end()<0) {
-        error("running pipe\n");
-        return -1;
-  }
-
-
-
-/*
-
   double t1 = gettime();
 
 #ifdef ENABLE_PARSEC_HOOKS
@@ -1501,6 +1279,6 @@ int main(int argc, char **argv)
 #ifdef ENABLE_PARSEC_HOOKS
   __parsec_bench_end();
 #endif
-*/
+
   return 0;
 }

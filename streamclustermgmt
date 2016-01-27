@@ -1,0 +1,83 @@
+#!/bin/bash
+
+### managment fo streamcluster parallelization
+
+
+
+
+##################################################
+#
+#                   FUNCTION
+#
+##################################################
+
+# process_args
+# process the Arguments
+#
+# arguments: all arguments given to the script ("$@")
+
+function process_args {
+
+  defaukt_build="g++"
+  default_inputsize="test"
+  default_nthreads="1"
+  default_submit="time"
+
+  # usage
+  usage"\
+Usage: $me -a ACTION [OPTION]...
+
+Manage the installation and running of streamcluster
+
+Options:
+  -a ACTION    Specify the action to perform. See below for a list of valid actions.
+  -p PACKAGE   A list of streamcluster implementation on which the action is to be performed.
+  -i INPUT     The input to use to run the streamcluster. Default: '$default_inputsize'
+  -n THREADS   The minimun number of threads to use. Default: "$default_nthreads"
+  -l           Disable log.
+  -h           Display this help message.
+
+
+Actions:
+  'build'       Build and install the fastflow streamcluster implementation.
+  'run'         Runs the specific streamcluster program.
+  'clean'       Removes all file generated during the build and run phase
+                of the listed packages.
+
+Examples(1)
+    - Build ff_streamcluster (fastflow stream cluster)
+          $me -a build -p ff_streamcluster
+    - Run a ff_streamcluster with input size `simsmall` and 4 threads:
+        $me -a run -p ff-streamcluster -i simsmall -n 4"
+
+}
+
+valid actions ="build run clean"
+
+##################################################
+#
+#                   MAIN
+#
+##################################################
+
+
+
+process_args = "$@"
+
+case "$1" in
+  sc_ff
+      echo "test fast flow stremcluster "
+      /bin/ff_streamcluster
+      ;;
+  sc_omp)
+      echo "'$1' run '$2' stremcluster "
+      /usr/bin/sc_omp
+      ;;
+  sc_parsec)
+    echo  "kgjrb"
+
+      ;;
+  *)
+          echo "Usage: $0 [sc__ff|sc_omp|sc_parsec] [test | simsmall| simmedium| simlarge]"
+      ;;
+esac

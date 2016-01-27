@@ -32,5 +32,5 @@ cleanall	: clean
 	\rm -f *.o *~
 
 install:
-	mkdir -p ./bin
-	mv -f $(TARGETS) ./bin/$(TARGETS)
+	mkdir -p ../bin
+	mv -f $(TARGETS) ../bin/$(TARGETS)
