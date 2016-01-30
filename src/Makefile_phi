@@ -1,19 +1,22 @@
+## Makefile for streamcluster project on xeon phi
+#
+#
 
-## Makefile for streamcluster project on pc desktop.
-#
-#
 # FF_ROOT     pointing to the FastFlow root directory (i.e. the one containing the ff directory).
-FF_ROOT		= ~/fastflow
+#FF_ROOT		= ~/fastflow
+
+#phi account fasflow directory
+FF_ROOT         = $(HOME)/fastflow
 
 
 # prefix of the project directory
 #PREFIX          = /home/dido-ubuntu/github/ParallelStreamCluster
 
 #Xeon phi - icc compiler
-CXX		= g++ -std=c++11  -DNO_DEFAUL_MAPPING
+CXX 		= icpc -std=c++11  -DNO_DEFAULT_MAPPING
 
 INCLUDES	= -I $(FF_ROOT)
-CXXFLAGS  	=  #-DNO_DEFAULT_MAPPIN
+CXXFLAGS  	=  -mmic
 
 LDFLAGS 	= -pthread
 
@@ -21,13 +24,13 @@ OPTFLAGS	= -O3           # -finline-functions -DNDEBUG  #-DPRINTINFO
 
 TARGETS		= ff_stream_cluster
 
-.PHONY: all clean cleanall
+.PHONY:  all clean cleanall
 .SUFFIXES: .cpp
 
-%:%.cpp
+% :%.cpp 
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OPTFLAGS) -o $@ $< $(LDFLAGS)
 
-all : $(TARGETS) 
+all : $(TARGETS) install
 
 clean	:
 	rm -f $(TARGETS)
