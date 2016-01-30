@@ -9,17 +9,17 @@ FF_ROOT		= ~/fastflow
 # prefix of the project directory
 #PREFIX          = /home/dido-ubuntu/github/ParallelStreamCluster
 
-#Xeon phi - icc compiler
-CXX		= g++ -std=c++11  -DNO_DEFAUL_MAPPING
+#
+CXX		= g++ -std=c++11  
 
 INCLUDES	= -I $(FF_ROOT)
-CXXFLAGS  	=  #-DNO_DEFAULT_MAPPIN
+CXXFLAGS  	=  
 
 LDFLAGS 	= -pthread
 
 OPTFLAGS	= -O3           # -finline-functions -DNDEBUG  #-DPRINTINFO
 
-TARGETS		= ff_stream_cluster
+TARGETS		= ff_stream_cluster ff_stream_cluster_noFarm
 
 .PHONY: all clean cleanall
 .SUFFIXES: .cpp
@@ -36,4 +36,4 @@ cleanall : clean
 
 install:
 	mkdir -p ../bin
-	mv -f $(TARGETS) ../bin/$(TARGETS)
+	mv -f $(TARGETS) ../bin/
