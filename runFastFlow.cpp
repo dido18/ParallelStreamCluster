@@ -5,11 +5,19 @@
 mkdir -p run
 
 
-NTHREADS=1
+# check if there are two inputs
+
+if [ $# -lt 2 ]; 
+   then 
+   echo "Usage:  $0  [test | simsmall | simmedium | simlarge | simdev]  NThreads"  
+   exit 1
+fi
+
+NTHREADS=$2;
 
 case $1 in
     test)
-        echo "Run simple test..."
+        echo "Run simple test...with ${NTHREADS} workers. "
         ./bin/ff_stream_cluster  2 5 1 10 10 5 none run/ff_output.txt ${NTHREADS}
         ;;
     simsmall)

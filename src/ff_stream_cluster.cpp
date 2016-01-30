@@ -69,8 +69,8 @@ using namespace ff;
 
 // fastflow parallefor parameters used in pgain() parallelization
 #define FASTFLOW    //comment this out to enable fastflow parallel for in pgain function
-#define PFWORKERS 1   // parallel_for parallelism degree
-#define PFGRAIN 0     //dafualt static scheduling of iterations
+int  PFWORKERS = 1;   // parallel_for parallelism degree
+int  PFGRAIN = 0;     //dafualt static scheduling of iterations
 
 
 #define CACHE_LINE 512 // cache line in byte
@@ -1307,6 +1307,17 @@ void streamCluster( PStream* stream,
 /#############################    end STREMCLUSTER ###################################
 */
 
+void printPoints( Points *points){
+
+  for(int i=0; i < points->num; ++i){
+    std::cout << "Point n° "<< i << " coord: ";
+    for(int k=0; k< points->dim; ++k){
+    std:cout << points->p[i].coord[k] <<" ";
+    }
+    std::cout<< "\n";
+  }
+
+}
 
 // Emitter
 struct EmitterChunks:ff_node_t<Points>{
@@ -1332,13 +1343,14 @@ struct EmitterChunks:ff_node_t<Points>{
       (points->p[i]).coord = &block[i*dim];
     }
 
+    
     while(1){
           size_t numRead  = stream->read(block, dim, chunksize);
 
       	  if(numRead==0) {
       	    return EOS;
       	  }
-      	  fprintf(stderr,"\n Emitter read %zu points\n", numRead);
+      	  fprintf(stderr,"Emitter read %zu points\n", numRead);
 
       	  if( stream->ferror() || numRead < (unsigned int)chunksize && !stream->feof() ) {
       	    fprintf(stderr, "error reading data!\n");
@@ -1369,8 +1381,9 @@ struct Worker:ff_node_t<Points>{
   Worker(int d, long kMIN, long kMAX, long centersz ): dim(d),kmin(kMIN),kmax(kMAX),centersize(centersz){}
 
   Points *svc(Points* points){
+#ifdef PRINTINFO
     std::cout << "The worker " << get_my_id()<<" has received a chunk with " << points->num << " points " <<" \n";
-
+#endif
     float* centerBlock = (float*)malloc(centersize*dim*sizeof(float) );
     long* centerIDs = (long*)malloc(centersize*dim*sizeof(long));
 
@@ -1422,7 +1435,10 @@ struct Worker:ff_node_t<Points>{
 
    /* send the K centers found to the collector*/
    ff_send_out(centers);
+#ifdef PRINTINFO
    std::cout << "The worker " << get_my_id()<<" has sent the conters founded \n";
+#endif
+
    return (Points*)GO_ON;
   }
 
@@ -1433,26 +1449,15 @@ struct Worker:ff_node_t<Points>{
 };
 
 /// collector
-
-void printPoints( Points *points){
-
-  for(int i=0; i < points->num; ++i){
-    std::cout << "Point n° "<< i << " coord: ";
-    for(int k=0; k< points->dim; ++k){
-    std:cout << points->p[i].coord[k] <<" ";
-    }
-    std::cout<< "\n\n";
-  }
-
-}
-
 struct lastStage:ff_minode_t<Points> { // NOTE multi-input node
 
   lastStage( long kMIN, long kMAX, char* out):kmin(kMIN),kmax(kMAX), outfile(out){}
 
   Points* svc(Points * centers){
-    std::cout << "The Collector " << get_my_id()<<" has received a the centers  points \n";
 
+#ifdef PRINTINFO
+    std::cout << "The Collector " << get_my_id()<<" has received a the centers  points \n";
+#endif
     long kfinal;// = centers->num; // to be verified
 
     switch_membership = (bool*)malloc(centers->num*sizeof(bool));
@@ -1470,7 +1475,7 @@ struct lastStage:ff_minode_t<Points> { // NOTE multi-input node
   }
 
   long kmin,kmax;
- char * outfile;
+  char * outfile;
 } ;
 
 
@@ -1481,19 +1486,7 @@ int main(int argc, char **argv)
   char *infilename = new char[MAXNAMESIZE];
   long kmin, kmax, n, chunksize, clustersize;
   int dim;
-
-#ifdef PARSEC_VERSION
-#define __PARSEC_STRING(x) #x
-#define __PARSEC_XSTRING(x) __PARSEC_STRING(x)
-        printf("PARSEC Benchmark Suite Version "__PARSEC_XSTRING(PARSEC_VERSION)"\n");
-	fflush(NULL);
-#else
-        printf("PARSEC Benchmark Suite\n");
-	fflush(NULL);
-#endif //PARSEC_VERSION
-#ifdef ENABLE_PARSEC_HOOKS
-  __parsec_bench_begin(__parsec_streamcluster);
-#endif
+ 
 
   if (argc<10) {
     fprintf(stderr,"usage: %s k1 k2 d n chunksize clustersize infile outfile nproc\n",
@@ -1521,6 +1514,9 @@ int main(int argc, char **argv)
   strcpy(outfilename, argv[8]);
   nproc = atoi(argv[9]);
 
+  PFWORKERS =  nproc;  //parallelfor parallelism degree
+
+
   srand48(SEED);
   PStream* stream;
   if( n > 0 ) {
@@ -1530,25 +1526,36 @@ int main(int argc, char **argv)
     stream = new FileStream(infilename);
   }
 
-  // farm declaration
+  // Fastflow emitter produces the stream of chuncksize elements.
   EmitterChunks emitter(stream, chunksize, dim);
 
+  // Fastflow workers finds the  medians in the stream received.
   std::vector<std::unique_ptr<ff_node>> Workers;
   for( int i=0; i<nproc; ++i){
     Workers.push_back(make_unique<Worker>(dim,kmin,kmax,clustersize));  //(int d, long kMIN, long kMAX, long centersz )
   }
 
+  // Fastflow Farm declaration
   ff_Farm<Points> myFarm (std::move(Workers),emitter);
 
-  myFarm.remove_collector(); // remove the default collector..
+  myFarm.remove_collector(); // remove the default collector.
 
+  //Fastflow collector receives the intermediate medians and produce te final k mediams.
   lastStage collector(kmin,kmax,outfilename);
+  
   ff_Pipe<Points> pipe(myFarm,collector);
 
+  std::cout<<"\nParallel STREAMCLUSTER starts.\n\n";
+  double t1 = gettime();   
+
+ 
   if (pipe.run_and_wait_end()<0) {
         error("running pipe\n");
         return -1;
   }
+
+  double t2 = gettime();  
+std::cout<< "\ntime = "<< t2-t1 <<std::endl;
 
   delete stream;
 
@@ -1562,38 +1569,5 @@ int main(int argc, char **argv)
     printf("time localSearch = %lf\n", time_local_search);
 #endif
 
-
-
-/*
-
-  double t1 = gettime();
-
-#ifdef ENABLE_PARSEC_HOOKS
-  __parsec_roi_begin();
-#endif
-  streamCluster(stream, kmin, kmax, dim, chunksize, clustersize, outfilename );
-#ifdef ENABLE_PARSEC_HOOKS
-  __parsec_roi_end();
-#endif
-
-  double t2 = gettime();
-
-  printf("time = %lf\n",t2-t1);
-
-  delete stream;
-#ifdef PROFILE
-  printf("time pgain = %lf\n", time_gain);
-  printf("time pgain_dist = %lf\n", time_gain_dist);
-  printf("time pgain_init = %lf\n", time_gain_init);
-  printf("time pselect = %lf\n", time_select_feasible);
-  printf("time pspeedy = %lf\n", time_speedy);
-  printf("time pshuffle = %lf\n", time_shuffle);
-  printf("time localSearch = %lf\n", time_local_search);
- #endif
-
-#ifdef ENABLE_PARSEC_HOOKS
-  __parsec_bench_end();
-#endif
-*/
   return 0;
 }
