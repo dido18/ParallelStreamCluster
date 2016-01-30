@@ -1,11 +1,7 @@
 ## Makefile for streamcluster project on xeon phi
-#
-#
 
-# FF_ROOT     pointing to the FastFlow root directory (i.e. the one containing the ff directory).
-#FF_ROOT		= ~/fastflow
 
-#phi account fasflow directory
+#FF_ROOT     pointing to the FastFlow root directory (i.e. the one containing the ff directory
 FF_ROOT         = $(HOME)/fastflow
 
 
@@ -16,7 +12,7 @@ FF_ROOT         = $(HOME)/fastflow
 CXX 		= icpc -std=c++11  -DNO_DEFAULT_MAPPING
 
 INCLUDES	= -I $(FF_ROOT)
-CXXFLAGS  	=  -mmic
+CXXFLAGS  	=  -mmic  
 
 LDFLAGS 	= -pthread
 
