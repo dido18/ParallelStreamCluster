@@ -10,14 +10,14 @@ FF_ROOT		= ~/fastflow
 #PREFIX          = /home/dido-ubuntu/github/ParallelStreamCluster
 
 #
-CXX		= g++ -std=c++11  
+CXX		= g++ -std=c++11
 
 INCLUDES	= -I $(FF_ROOT)
 CXXFLAGS  	=   -g 		#for gdb debugging
 
 LDFLAGS 	= -pthread
 
-OPTFLAGS	= -O3         -DPRINTINFO  # -finline-functions -DNDEBUG  #-DPRINTINFO
+OPTFLAGS	= -O3        # -DPRINTINFO  # -finline-functions -DNDEBUG  #-DPRINTINFO
 
 TARGETS		= ff_stream_cluster ff_stream_cluster_noFarm
 
@@ -27,7 +27,7 @@ TARGETS		= ff_stream_cluster ff_stream_cluster_noFarm
 %:%.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OPTFLAGS) -o $@ $< $(LDFLAGS)
 
-all : $(TARGETS) 
+all : $(TARGETS)
 
 clean	:
 	rm -f $(TARGETS)
@@ -37,4 +37,3 @@ cleanall : clean
 install:
 	mkdir -p ../bin
 	mv -f $(TARGETS) ../bin/
-

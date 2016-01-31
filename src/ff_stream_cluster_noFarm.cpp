@@ -1,3 +1,4 @@
+
 /***********************************************
 	streamcluster_omp.cpp
 	: parallelized code of streamcluster using OpenMP
@@ -58,8 +59,7 @@ int  PFGRAIN = 0;     //dafualt static scheduling of iterations
 
 #ifdef FASTFLOW
   ParallelFor pf(PFWORKERS);
-  
-ParallelForReduce<double> pfr(PFWORKERS); //true
+  ParallelForReduce<double> pfr(PFWORKERS); //true
 #endif
 
 #define CACHE_LINE 512 // cache line in byte
