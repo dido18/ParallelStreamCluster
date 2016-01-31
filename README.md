@@ -5,12 +5,34 @@ We will consider here the application already provided in the [Parsec](http://pa
 
 The student must develop a parallel version of the application using [FastFlow](http://calvados.di.unipi.it/ "FastFlow web site").
 
-The project must be developed with:
-- processes and COW (cluster of workstation computation)
+# Project structure
+
+```
+ParallelStreamCluster
+	/bin    			Binary files (the folder is created with make install).
+	/parsec_streamcluster		Source code of streamcluster of PARSEC benchmark
+	/rodinia_streamcluster		Source code of streamcluster of RODINIA.
+	/run 				Contains the output files (the folder is created by run[*].sh
+	/src				Source code of FastFlow parallelization.
+	
+	run[*].sh			Bash scripts for running the tests.(e.g. runFastFlow.sh)
+```
+
+### How to run the tests
+In the `/src` directory there are two different Make configuration:
+- `Makefile` produces the binary for **normal PC** using `g++`.
+- `Makefile_phi` produces the binary for **Xeon Phi** coprocessor using `icpc`.
+
+In order to run the tests (on PC or XeonPhi)  you must follow the steps below:
+1. Go into `src` directory .
+2. Run the command `Make-f Makefile` for PC or `Make -f Makefile_phi` for xeon phi binary.The binary files are in the current directory.
+2. Run `Make install` in order to create  the `/bin` directory (if not already exist) and move the binaries produces inside
+3. Go in the same level of the `run[*].sh` script that you want to run. 
+4. Launch the script, it will produce the help if nothing is passed.
+5. The output of the execition are moved into the `run` directory.
 
 
-## StreamCLuster() function
-
+## StreamCLuster function
 
 ```
 void streamCluster( stream,kmin,  kmax, dim, chunksize, centersize, char* outfile ){
@@ -44,11 +66,8 @@ every new point, it weighs the cost of making it a new center
 and reassigning some of the existing points to it against the
 savings caused by minimizing the distance between points.
 
-
-`double pgain(long x, Points *points, double z, long int *numcenters, int pid, pthread_barrier_t* barrier)
-`
-If the heuristic determines that the change would be advantageous the
-results are committed.
+`double pgain(long x, Points *points, double z, long int *numcenters, int pid, pthread_barrier_t* barrier)`
+If the heuristic determines that the change would be advantageous the results are committed.
 
 
 # PARSEC framework - streamcluster
