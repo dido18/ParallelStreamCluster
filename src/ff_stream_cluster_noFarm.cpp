@@ -52,10 +52,15 @@ using namespace ff;
 
 // fastflow parallefor parameters used in pgain() parallelization
 #define FASTFLOW      //comment this out to enable fastflow parallel for in pgain function
-static int  PFWORKERS = 1;   // parallel_for parallelism degree
-static int  PFGRAIN = 0;     //dafualt static scheduling of iterations
+int  PFWORKERS = 1;   // parallel_for parallelism degree
+int  PFGRAIN = 0;     //dafualt static scheduling of iterations
 
 
+#ifdef FASTFLOW
+  ParallelFor pf(PFWORKERS);
+  
+ParallelForReduce<double> pfr(PFWORKERS); //true
+#endif
 
 #define CACHE_LINE 512 // cache line in byte
 
@@ -361,10 +366,6 @@ float pspeedy(Points *points, float z, long *kcenter, int pid, pthread_barrier_t
 
 double pgain(long x, Points *points, double z, long int *numcenters, int pid, pthread_barrier_t* barrier)
 {
-#ifdef FASTFLOW
-  ParallelFor pf(PFWORKERS);
-#endif
-
   //  printf("pgain pthread %d begin\n",pid);
 #ifdef ENABLE_THREADS
   pthread_barrier_wait(barrier);
@@ -461,21 +462,48 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
   //global *lower* fields
   double* gl_lower = &work_mem[nproc*stride];
 	
-	// OpenMP parallelization
-//	#pragma omp parallel for 
-//#######################################  parallelForReuce ########################################à
+// OpenMP parallelization 	#pragma omp parallel for 
 
-
-
-//###########################################################################################
+//##############################################################################################
+//##############################################################################################
+//#####################################   PARALLELFOR_REDUCE  ##################################
+//##############################################################################################
+//##############################################################################################
 
 //	#pragma omp parallel for reduction(+: cost_of_opening_x)
-//#ifdef FASTFLOW 
 
-//#else
+#ifdef FASTFLOW   //fast flow arallel_for_reduce 
+  //  for ( i = k1; i < k2; i++ ) {
+  auto reduceF = [](double & var, const double & elem){
+    var += elem;  //sum of partial cost_of_opening x
+  };
+   
+  auto bodyF = [&](const long i, double  &cost_of_opening_x){
+    float x_cost = dist(points->p[i], points->p[x], points->dim) * points->p[i].weight;
+    float current_cost = points->p[i].cost;
 
-//#endif
-  for ( i = k1; i < k2; i++ ) {
+    if ( x_cost < current_cost ) {
+      // point i would save cost just by switching to x
+      // (note that i cannot be a median,
+      // or else dist(p[i], p[x]) would be 0)
+      switch_membership[i] = 1;
+      cost_of_opening_x += x_cost - current_cost;
+    } else {
+      // cost of assigning i to x is at least current assignment cost of i
+      // consider the savings that i's **current** median would realize
+      // if we reassigned that median and all its members to x;
+      // note we've already accounted for the fact that the median
+      // would save z by closing; now we have to subtract from the savings
+      // the extra cost of reassigning that median and its members
+      int assign = points->p[i].assign;
+      lower[center_table[assign]] += current_cost - x_cost;
+    }
+  };
+
+  pfr.parallel_reduce(cost_of_opening_x, 0.0 , k1, k2, 1, PFGRAIN, bodyF, reduceF);
+
+#else // ORIGIANL COMPUTATION 
+ for ( i = k1; i < k2; i++ ) {
     float x_cost = dist(points->p[i], points->p[x], points->dim) 
       * points->p[i].weight;
     float current_cost = points->p[i].cost;
@@ -501,6 +529,8 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
     }
   }
 
+#endif  // Endif parallerfor reduce 
+ 
 #ifdef ENABLE_THREADS
   pthread_barrier_wait(barrier);
 #endif	
@@ -1322,6 +1352,5 @@ int main(int argc, char **argv)
   printf("time localSearch = %lf\n", time_local_search);
   printf("loops=%d\n", d);
 
-  
   return 0;
 }

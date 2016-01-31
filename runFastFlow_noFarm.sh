@@ -38,6 +38,6 @@ case $1 in
         ${BINARY_PATH}  3 10 3 16 16 10 none run/ff_output.txt ${NTHREADS}
         ;;
     *)
-        echo "Usage:  $0  [test | simsmall | simmedium | simlarge | simdev]"
+        echo "Usage:  $0  [test | simsmall | simmedium | simlarge | simdev] Nthreads"
             echo "       'make install' if binary file are not present"
 esac

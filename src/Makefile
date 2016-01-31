@@ -13,11 +13,11 @@ FF_ROOT		= ~/fastflow
 CXX		= g++ -std=c++11  
 
 INCLUDES	= -I $(FF_ROOT)
-CXXFLAGS  	=  
+CXXFLAGS  	=   -g 		#for gdb debugging
 
 LDFLAGS 	= -pthread
 
-OPTFLAGS	= -O3           # -finline-functions -DNDEBUG  #-DPRINTINFO
+OPTFLAGS	= -O3         -DPRINTINFO  # -finline-functions -DNDEBUG  #-DPRINTINFO
 
 TARGETS		= ff_stream_cluster ff_stream_cluster_noFarm
 
@@ -37,3 +37,4 @@ cleanall : clean
 install:
 	mkdir -p ../bin
 	mv -f $(TARGETS) ../bin/
+

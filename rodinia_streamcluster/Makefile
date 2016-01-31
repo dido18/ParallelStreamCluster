@@ -25,5 +25,5 @@ clean:
 # dido: run install to put the binary inside /bin in the project
 install:
 		mkdir -p ../bin
-		mv -f $(TARGET_O) ../bin/$(TARGET_O)
-		mv -f $(TARGET_C) ../bin/$(TARGET_C)
+		mv -f $(TARGET_O) ../bin/
+		mv -f $(TARGET_C) ../bin/
