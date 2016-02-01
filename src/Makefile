@@ -13,7 +13,7 @@ FF_ROOT		= ~/fastflow
 CXX		= g++ -std=c++11
 
 INCLUDES	= -I $(FF_ROOT)
-CXXFLAGS  	=   -g 		#for gdb debugging
+CXXFLAGS  	= -g 		#for gdb debugging
 
 LDFLAGS 	= -pthread
 
