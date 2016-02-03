@@ -17,9 +17,9 @@ CXXFLAGS  	= -g 		#for gdb debugging
 
 LDFLAGS 	= -pthread
 
-OPTFLAGS	= -O3        # -DPRINTINFO  # -finline-functions -DNDEBUG  #-DPRINTINFO
+OPTFLAGS	= -O3        #-DPRINTINFO  # -finline-functions -DNDEBUG  #-DPRINTINFO
 
-TARGETS		= ff_stream_cluster ff_stream_cluster_noFarm
+TARGETS		=  ff_stream_cluster_FarmMap #ff_stream_cluster ff_stream_cluster_noFarm
 
 .PHONY: all clean cleanall
 .SUFFIXES: .cpp

@@ -503,13 +503,13 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
   //###################################################################################################
 
 #ifdef FASTFLOW
-  
+
 
   //  for ( i = k1; i < k2; i++ ) {
   auto reduceF = [](double & var, const double & elem){
     var += elem;  //sum of partial cost_of_opening x
   };
-   
+
   auto bodyF = [&](const long i, double  &cost_of_opening_x){
     float x_cost = dist(points->p[i], points->p[x], points->dim) * points->p[i].weight;
     float current_cost = points->p[i].cost;
@@ -1343,7 +1343,7 @@ struct EmitterChunks:ff_node_t<Points>{
       (points->p[i]).coord = &block[i*dim];
     }
 
-    
+
     while(1){
           size_t numRead  = stream->read(block, dim, chunksize);
 
@@ -1486,7 +1486,7 @@ int main(int argc, char **argv)
   char *infilename = new char[MAXNAMESIZE];
   long kmin, kmax, n, chunksize, clustersize;
   int dim;
- 
+
 
   if (argc<10) {
     fprintf(stderr,"usage: %s k1 k2 d n chunksize clustersize infile outfile nproc\n",
@@ -1542,19 +1542,19 @@ int main(int argc, char **argv)
 
   //Fastflow collector receives the intermediate medians and produce te final k mediams.
   lastStage collector(kmin,kmax,outfilename);
-  
+
   ff_Pipe<Points> pipe(myFarm,collector);
 
   std::cout<<"\nParallel STREAMCLUSTER starts.\n\n";
-  double t1 = gettime();   
+  double t1 = gettime();
 
- 
+
   if (pipe.run_and_wait_end()<0) {
         error("running pipe\n");
         return -1;
   }
 
-  double t2 = gettime();  
+  double t2 = gettime();
 std::cout<< "\ntime = "<< t2-t1 <<std::endl;
 
   delete stream;
