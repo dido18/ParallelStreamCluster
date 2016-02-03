@@ -1,53 +1,41 @@
-///Copyright (c) 2006-2009 Princeton University
-//All rights reserved.
 
-//Redistribution and use in source and binary forms, with or withou
-//modification, are permitted provided that the following conditions ar
-//    * Redistributions of source code must retain the above copyright
-//      notice, this list of conditions and the following disclaimer
-//    * Redistributions in binary form must reproduce the above copyright
-//      notice, this list of conditions and the following disclaimer in the
-//      documentation and/or other materials provided with the distribution.
-//    * Neither the name of Princeton University nor the
-//      names of its contributors may be used to endorse or promote products
-//      derived from this software without specific prior written permissi
+/***********************************************
+	streamcluster_omp.cpp
+	: parallelized code of streamcluster using OpenMP
 
+	- original code from PARSEC Benchmark Suite
+	- parallelization with OpenMP API has been applied by
 
-//THIS SOFTWARE IS PROVIDED BY PRINCETON UNIVERSITY ``AS IS'' AND ANY
-//EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-//WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-//DISCLAIMED. IN NO EVENT SHALL PRINCETON UNIVERSITY BE LIABLE FOR ANY
-//DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-//(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-//LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-//ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-//(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-//SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	Sang-Ha (a.k.a Shawn) Lee - sl4ge@virginia.edu
+	University of Virginia
+	Department of Electrical and Computer Engineering
+	Department of Computer Science
 
-
-// fastflow
-#include <ff/farm.hpp>
-#include <ff/pipeline.hpp>
+***********************************************/
+//fastflow
 #include <ff/parallel_for.hpp>
+#include <ff/pipeline.hpp>
+#include <ff/farm.hpp>
+#include <ff/map.hpp>
+
 
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
 #include <sys/time.h>
-
 #include <string.h>
 #include <assert.h>
 #include <math.h>
 #include <sys/resource.h>
 #include <limits.h>
+#include <omp.h>
 
 #ifdef ENABLE_PARSEC_HOOKS
 #include <hooks.h>
 #endif
 
 using namespace std;
-
 using namespace ff;
 
 #define MAXNAMESIZE 1024 // max filename length
@@ -66,33 +54,35 @@ using namespace ff;
 //#define ENABLE_THREADS  // comment this out to disable threads
 //#define INSERT_WASTE //uncomment this to insert waste computation into dist function
 
-
 // fastflow parallefor parameters used in pgain() parallelization
-#define FASTFLOW    //comment this out to enable fastflow parallel for in pgain function
+#define FASTFLOW      //comment this out to enable fastflow parallel for in pgain function
 int  PFWORKERS = 1;   // parallel_for parallelism degree
 int  PFGRAIN = 0;     //dafualt static scheduling of iterations
 
-
 #define CACHE_LINE 512 // cache line in byte
 
-// instrumentation code
-#ifdef PROFILE
-double time_local_search;
-double time_speedy;
-double time_select_feasible;
-double time_gain;
-double time_shuffle;
-double time_gain_dist;
-double time_gain_init;
+#ifdef FASTFLOW
+
+//  printf("pgain pthread %d begin\n",PFWORKERS);
+  //std::cout <<" PFWORKERS " << PFWORKERS ;
+//  ParallelFor pf(PFWORKERS); //without PFWORKERS parameter all the cores available are used.
+  ParallelFor pf;
+//  ParallelForReduce<double> pfr(PFWORKERS);
+  //std::cout <<" PFWORKERS " << PFWORKERS ;
+	   ParallelForReduce<double> pfr;
+  //spinwait=true, long is the reduciton variable type.
 #endif
+//######################################################
+//#####################   my points class ###############
+//#######################################################
 
-
-//#####################   my point definition
 struct Point{
-  Point(){} //default constructor
-  float weight;  float *coord;
+  Point() {} //default constructor
+  float weight;
+  float *coord;
   long assign;  // number of point where this one is assigned
   float cost;  // cost of that assignment, weight*distance
+  long ID;   //point ID: the position on the stream (dido).
 };
 
 // this is the array of points
@@ -107,7 +97,7 @@ struct Points {
 
 /*
 // this structure represents a point
-/ these will be passed around to avoid copying coordinates
+// these will be passed around to avoid copying coordinates
 typedef struct {
   float weight;
   float *coord;
@@ -117,18 +107,31 @@ typedef struct {
 
 // this is the array of points
 typedef struct {
-  long num; // number of points; may not be N if this is a sample
+  long num; //number of points; may not be N if this is a sample
   int dim;  // dimensionality
-  Point *p; // the array itself
+  Point *p; //the array itself
 } Points;
+
 */
-static bool *switch_membership; //whether to switch membership in pgain
-static bool* is_center; //whether a point is a center
-static int* center_table; //index table of centers
+//static bool *switch_membership; //whether to switch membership in pgain
+//static bool* is_center; //whether a point is a center
+//static int* center_table; //index table of centers
+float* block;
 
 static int nproc; //# of threads
+static int c, d;
+static int ompthreads;
 
-
+// instrumentation code
+#ifdef PROFILE
+double time_local_search;
+double time_speedy;
+double time_select_feasible;
+double time_gain;
+double time_shuffle;
+double time_gain_dist;
+double time_gain_init;
+#endif
 
 double gettime() {
   struct timeval t;
@@ -394,13 +397,10 @@ float pspeedy(Points *points, float z, long *kcenter, int pid, pthread_barrier_t
 /* z is the facility cost, x is the number of this point in the array
    points */
 
+
+/*
 double pgain(long x, Points *points, double z, long int *numcenters, int pid, pthread_barrier_t* barrier)
 {
-#ifdef FASTFLOW
-  ParallelFor pf(PFWORKERS);
-  ParallelForReduce<double> pfr(PFWORKERS, true);
-#endif
-
   //  printf("pgain pthread %d begin\n",pid);
 #ifdef ENABLE_THREADS
   pthread_barrier_wait(barrier);
@@ -408,6 +408,7 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
 #ifdef PROFILE
   double t0 = gettime();
 #endif
+
 
   //my block
   long bsize = points->num/nproc;
@@ -439,7 +440,6 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
     gl_cost_of_opening_x = 0;
     gl_number_of_centers_to_close = 0;
   }
-
 #ifdef ENABLE_THREADS
   pthread_barrier_wait(barrier);
 #endif
@@ -496,21 +496,24 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
   double* lower = &work_mem[pid*stride];
   //global *lower* fields
   double* gl_lower = &work_mem[nproc*stride];
-  //###########################################    parallelforreduce ##################################
-  //
-  //
-  //	#pragma omp parallel for reduction(+: cost_of_opening_x)
-  //###################################################################################################
 
-#ifdef FASTFLOW
+// OpenMP parallelization 	#pragma omp parallel for
 
+//##############################################################################################
+//##############################################################################################
+//#####################################   PARALLELFOR_REDUCE  ##################################
+//##############################################################################################
+//##############################################################################################
 
+//	#pragma omp parallel for reduction(+: cost_of_opening_x)
+
+#ifdef FASTFLOW   //fast flow arallel_for_reduce
   //  for ( i = k1; i < k2; i++ ) {
   auto reduceF = [](double & var, const double & elem){
     var += elem;  //sum of partial cost_of_opening x
   };
 
-  auto bodyF = [&](const long i, double  &cost_of_opening_x){
+  auto bodyF = [&](const long i, double  &my_cost_of_opening_x){
     float x_cost = dist(points->p[i], points->p[x], points->dim) * points->p[i].weight;
     float current_cost = points->p[i].cost;
 
@@ -519,7 +522,7 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
       // (note that i cannot be a median,
       // or else dist(p[i], p[x]) would be 0)
       switch_membership[i] = 1;
-      cost_of_opening_x += x_cost - current_cost;
+      my_cost_of_opening_x += x_cost - current_cost;
     } else {
       // cost of assigning i to x is at least current assignment cost of i
       // consider the savings that i's **current** median would realize
@@ -532,25 +535,22 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
     }
   };
 
-  pfr.parallel_reduce(cost_of_opening_x, 0.0, k1, k2, 1, bodyF, reduceF, PFWORKERS);
+  //
+  pfr.parallel_reduce(cost_of_opening_x, 0.0 , k1, k2, 1, PFGRAIN, bodyF, reduceF,PFWORKERS);
 
-#else
-
-  for ( i = k1; i < k2; i++ ) {
+#else // ORIGIANL COMPUTATION
+ for ( i = k1; i < k2; i++ ) {
     float x_cost = dist(points->p[i], points->p[x], points->dim)
       * points->p[i].weight;
     float current_cost = points->p[i].cost;
 
     if ( x_cost < current_cost ) {
 
-
       // point i would save cost just by switching to x
       // (note that i cannot be a median,
       // or else dist(p[i], p[x]) would be 0)
-
       switch_membership[i] = 1;
       cost_of_opening_x += x_cost - current_cost;
-
     } else {
 
       // cost of assigning i to x is at least current assignment cost of i
@@ -564,31 +564,31 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
       lower[center_table[assign]] += current_cost - x_cost;
     }
   }
-#endif // endif FASTFLOW parallel reduce
 
+#endif  // Endif parallerfor reduce
 
 #ifdef ENABLE_THREADS
   pthread_barrier_wait(barrier);
 #endif
-
 #ifdef PROFILE
   double t2 = gettime();
   if( pid==0){
     time_gain_dist += t2 - t1;
   }
 #endif
-
   // at this time, we can calculate the cost of opening a center
   // at x; if it is negative, we'll go through with opening it
+
 
   for ( int i = k1; i < k2; i++ ) {
     if( is_center[i] ) {
       double low = z;
       //aggregate from all threads
       for( int p = 0; p < nproc; p++ ) {
-	low += work_mem[center_table[i]+p*stride];
+				low += work_mem[center_table[i]+p*stride];
       }
       gl_lower[center_table[i]] = low;
+			//printf("%d : %f %f\n", i, low, work_mem[center_table[i]+stride]);
       if ( low > 0 ) {
 	// i is a median, and
 	// if we were to open x (which we still may not) we'd close i
@@ -599,6 +599,10 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
       }
     }
   }
+#ifdef ENABLE_THREADS
+  pthread_barrier_wait(barrier);
+#endif
+
   //use the rest of working memory to store the following
   work_mem[pid*stride + K] = number_of_centers_to_close;
   work_mem[pid*stride + K+1] = cost_of_opening_x;
@@ -623,26 +627,28 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
   // otherwise do nothing
 
   if ( gl_cost_of_opening_x < 0 ) {
+    //  we'd save money by opening x; we'll do it
 
-//###############################################    parallelfor ################################
-//
-//                  data parallel parallelization with fastflow
-//
-//###############################################################################################
+    //#######################################################################################
+    //##################################### PARALLELFOR ####################################
+    //######################################################################################
 
+    //		#pragma omp parallel for
 #ifdef FASTFLOW
     //  we'd save money by opening x; we'll do it
-      pf.parallel_for(k1,k2,1,[&](const long i){
-	  bool close_center = gl_lower[center_table[points->p[i].assign]] > 0 ;
-	  if ( switch_membership[i] || close_center ) {
-	    // Either i's median (which may be i itself) is closing,
-	    // or i is closer to x than to its current median
-	    points->p[i].cost = points->p[i].weight *
-	      dist(points->p[i], points->p[x], points->dim);
-	    points->p[i].assign = x;
-	  }
-	}); // using all the PFWORKERS
-#else
+
+      pf.parallel_for(k1, k2 ,1 ,PFGRAIN, [&](const long i){
+				  bool close_center = gl_lower[center_table[points->p[i].assign]] > 0 ;
+				  if ( switch_membership[i] || close_center ) {
+				    // Either i's median (which may be i itself) is closing,
+				    // or i is closer to x than to its current median
+				    points->p[i].cost = points->p[i].weight *
+				      dist(points->p[i], points->p[x], points->dim);
+				    points->p[i].assign = x;
+				  }
+	},PFWORKERS); // using all the PFWORKERS
+
+#else //original computation
 
     //  we'd save money by opening x; we'll do it
     for ( int i = k1; i < k2; i++ ) {
@@ -655,11 +661,11 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
 	points->p[i].assign = x;
       }
     }
-#endif
+#endif //end FASTFLOW
 
     for( int i = k1; i < k2; i++ ) {
       if( is_center[i] && gl_lower[center_table[i]] > 0 ) {
-	is_center[i] = false;
+				is_center[i] = false;
       }
     }
     if( x >= k1 && x < k2 ) {
@@ -684,6 +690,7 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
     //    free(switch_membership);
     //    free(proc_cost_of_opening_x);
     //    free(proc_number_of_centers_to_close);
+
   }
 
 #ifdef PROFILE
@@ -691,9 +698,9 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
   if( pid==0 )
   time_gain += t3-t0;
 #endif
+	//printf("cost=%f\n", -gl_cost_of_opening_x);
   return -gl_cost_of_opening_x;
 }
-
 
 /* facility location on the points using local search */
 /* z is the facility cost, returns the total cost and # of centers */
@@ -730,7 +737,10 @@ float pFL(Points *points, int *feasible, int numfeasible,
 #endif
     for (i=0;i<iter;i++) {
       x = i%numfeasible;
+			//printf("iteration %d started********\n", i);
       change += pgain(feasible[x], points, z, k, pid, barrier);
+			c++;
+			//printf("iteration %d finished @@@@@@\n", i);
     }
 
     cost -= change;
@@ -940,6 +950,7 @@ float pkmedian(Points *points, long kmin, long kmax, long* kfinal,
 #endif
 
   while(1) {
+		d++;
 #ifdef PRINTINFO
     if( pid==0 )
       {
@@ -1027,8 +1038,7 @@ int contcenters(Points *points)
   return 0;
 }
 
-/* copy centers from points to centers */
-void copycenters(Points *points, Points* centers, long* centerIDs, long offset)
+void mycopycenters(Points *points, Points* centers)//, long* centerIDs, long offset)
 {
   long i;
   long k;
@@ -1047,6 +1057,36 @@ void copycenters(Points *points, Points* centers, long* centerIDs, long offset)
     if ( is_a_median[i] ) {
       memcpy( centers->p[k].coord, points->p[i].coord, points->dim * sizeof(float));
       centers->p[k].weight = points->p[i].weight;
+      //centerIDs[k] = i + offset;
+      k++;
+    }
+  }
+
+  centers->num = k;
+
+  free(is_a_median);
+}
+/*
+// copy centers from points to centers
+void copycenters(Points *points, Points* centers, long* centerIDs, long offset)
+{
+  long i;
+  long k;
+
+  bool *is_a_median = (bool *) calloc(points->num, sizeof(bool));
+
+  // mark the centers
+  for ( i = 0; i < points->num; i++ ) {
+    is_a_median[points->p[i].assign] = 1;
+  }
+
+  k=centers->num;
+
+  // count how many
+  for ( i = 0; i < points->num; i++ ) {
+    if ( is_a_median[i] ) {
+      memcpy( centers->p[k].coord, points->p[i].coord, points->dim * sizeof(float));
+      centers->p[k].weight = points->p[i].weight;
       centerIDs[k] = i + offset;
       k++;
     }
@@ -1056,6 +1096,7 @@ void copycenters(Points *points, Points* centers, long* centerIDs, long offset)
 
   free(is_a_median);
 }
+*/
 
 struct pkmedian_arg_t
 {
@@ -1209,15 +1250,12 @@ void outcenterIDs( Points* centers, long* centerIDs, char* outfile ) {
   }
   fclose(fp);
 }
-
-
 /*
-//################################## STREAM CLUSTER ######################
 void streamCluster( PStream* stream,
 		    long kmin, long kmax, int dim,
 		    long chunksize, long centersize, char* outfile )
 {
-  float* block = (float*)malloc( chunksize*dim*sizeof(float) );
+  block = (float*)malloc( chunksize*dim*sizeof(float) );
   float* centerBlock = (float*)malloc(centersize*dim*sizeof(float) );
   long* centerIDs = (long*)malloc(centersize*dim*sizeof(long));
 
@@ -1233,6 +1271,8 @@ void streamCluster( PStream* stream,
   for( int i = 0; i < chunksize; i++ ) {
     points.p[i].coord = &block[i*dim];
   }
+
+
 
   Points centers;
   centers.dim = dim;
@@ -1304,27 +1344,13 @@ void streamCluster( PStream* stream,
   contcenters(&centers);
   outcenterIDs( &centers, centerIDs, outfile);
 }
-/#############################    end STREMCLUSTER ###################################
 */
-
-void printPoints( Points *points){
-
-  for(int i=0; i < points->num; ++i){
-    std::cout << "Point n° "<< i << " coord: ";
-    for(int k=0; k< points->dim; ++k){
-    std:cout << points->p[i].coord[k] <<" ";
-    }
-    std::cout<< "\n";
-  }
-
-}
-
 // Emitter
 struct EmitterChunks:ff_node_t<Points>{
 
   EmitterChunks(PStream *Stream, long cksize, long d): stream(Stream), chunksize(cksize), dim(d){}
 
-  Points *svc (Points *){ //  it will receive the streams from the external source
+  Points *svc (Points *){  //generates the stream
 
     float* block = (float*)malloc(chunksize*dim*sizeof(float) );
     //float* centerBlock = (float*)malloc(centersize*dim*sizeof(float) );
@@ -1343,7 +1369,7 @@ struct EmitterChunks:ff_node_t<Points>{
       (points->p[i]).coord = &block[i*dim];
     }
 
-
+    long IDoffset = 0;
     while(1){
           size_t numRead  = stream->read(block, dim, chunksize);
 
@@ -1360,10 +1386,14 @@ struct EmitterChunks:ff_node_t<Points>{
       	  points->num = numRead;
       	  for( int i = 0; i < points->num; i++ ) {
       	    points->p[i].weight = 1.0;
+            points->p[i].ID = IDoffset + i;
       	  }
 
+          IDoffset +=numRead;
+
       	  ff_send_out(points);
-          }//end strem
+          }
+        // the stream is finished
         return EOS;
   } // end svc method
 
@@ -1373,19 +1403,33 @@ struct EmitterChunks:ff_node_t<Points>{
 };
 
 
-// worker
+// Map worker
 
 /* worker receive a chunk and produce k centers of the chunk received.*/
-struct Worker:ff_node_t<Points>{
+struct mapWorker:ff_Map<Points>{
 
-  Worker(int d, long kMIN, long kMAX, long centersz ): dim(d),kmin(kMIN),kmax(kMAX),centersize(centersz){}
+  int dim;
+  long kmin;
+  long kmax;
+  long centersize;
+  bool *switch_membership; //whether to switch membership in pgain
+  bool* is_center; //whether a point is a center
+  int* center_table; //index table of centers
+
+  mapWorker(int d, long kMIN, long kMAX, long centersz ): dim(d),kmin(kMIN),kmax(kMAX),centersize(centersz){}
 
   Points *svc(Points* points){
+
 #ifdef PRINTINFO
     std::cout << "The worker " << get_my_id()<<" has received a chunk with " << points->num << " points " <<" \n";
 #endif
+
+    switch_membership = (bool*)malloc(points->num*sizeof(bool));
+    is_center = (bool*)calloc(points->num,sizeof(bool));
+    center_table = (int*)malloc(points->num*sizeof(int));
+
     float* centerBlock = (float*)malloc(centersize*dim*sizeof(float) );
-    long* centerIDs = (long*)malloc(centersize*dim*sizeof(long));
+    //long* centerIDs = (long*)malloc(centersize*dim*sizeof(long)); // substituted by ID in point
 
     Point *p = (Point *)malloc(centersize*sizeof(Point));
     Points *centers = new Points(dim, 0, p);  //num=0  zero centers initially
@@ -1395,39 +1439,36 @@ struct Worker:ff_node_t<Points>{
       centers->p[i].weight = 1.0;
     }
 
-    switch_membership = (bool*)malloc(points->num*sizeof(bool));
-    is_center = (bool*)calloc(points->num,sizeof(bool));
-    center_table = (int*)malloc(points->num*sizeof(int));
-
    /* localSearch  of kmediam on the chunk received*/
-   long IDoffset = 0; // IDoffset +=numRead ,in official algorithm it is used to update centeID[k]= i+IDoffset  in copy center
+   //long IDoffset = 0; // IDoffset +=numRead ,in official algorithm it is used to update centeID[k]= i+IDoffset  in copy center
    long kfinal;
 
-   localSearch(points, kmin, kmax, &kfinal);
+   localSearch(points, kmin, kmax, &kfinal); //parallel for compuation
 
 #ifdef PRINTINFO
    std::cout << "The worker " << get_my_id()<<" finish local search with  kfinal " << kfinal<<" centroids founded \n";
 #endif
 
+   contcenters(points); //computer the means for the k clusters
 
-   contcenters(points);
+  //  kfinal=centers.num because identify the centers found in the chunk (to be check)????
+   /*
    if( kfinal + centers->num > centersize ) {
       //here we don't handle the situation where # of centers gets too large.
       fprintf(stderr,"oops! no more space for centers\n");
       return(EOS); //exit(1);compile
 
     }
-
+   */
 #ifdef PRINTINFO
     printf("finish cont center\n");
 #endif
-    copycenters(points, centers, centerIDs, IDoffset); //copy points to point to centers.
+    // centerIDs and IDOFFEST can be eliminibnated
+    mycopycenters(points, centers);//, centerIDs, IDoffset); //copy centers from points to centers
 
-    //  IDoffset += numRead;  // maybe needed: for reading the id of the centers in file source stream
 #ifdef PRINTINFO
     printf("finish copy centers\n");
 #endif
-
 
    free(is_center);
    free(switch_membership);
@@ -1435,49 +1476,14 @@ struct Worker:ff_node_t<Points>{
 
    /* send the K centers found to the collector*/
    ff_send_out(centers);
+
 #ifdef PRINTINFO
    std::cout << "The worker " << get_my_id()<<" has sent the conters founded \n";
 #endif
-
    return (Points*)GO_ON;
   }
 
-  int dim;
-  long kmin;
-  long kmax;
-  long centersize;
-};
-
-/// collector
-struct lastStage:ff_minode_t<Points> { // NOTE multi-input node
-
-  lastStage( long kMIN, long kMAX, char* out):kmin(kMIN),kmax(kMAX), outfile(out){}
-
-  Points* svc(Points * centers){
-
-#ifdef PRINTINFO
-    std::cout << "The Collector " << get_my_id()<<" has received a the centers  points \n";
-#endif
-    long kfinal;// = centers->num; // to be verified
-
-    switch_membership = (bool*)malloc(centers->num*sizeof(bool));
-    is_center = (bool*)calloc(centers->num,sizeof(bool));
-    center_table = (int*)malloc(centers->num*sizeof(int));
-
-    localSearch(centers, kmin, kmax , &kfinal ); // parallel
-    contcenters(centers);
-    //    outcenterIDs( centers, centerIDs, outfile);
-    printPoints(centers);
-
-    delete centers;
-    return GO_ON;
-
-  }
-
-  long kmin,kmax;
-  char * outfile;
-} ;
-
+}; //end worker definition
 
 
 int main(int argc, char **argv)
@@ -1486,7 +1492,10 @@ int main(int argc, char **argv)
   char *infilename = new char[MAXNAMESIZE];
   long kmin, kmax, n, chunksize, clustersize;
   int dim;
-
+  /*      int numthreads;
+	c = 0;
+	d = 0;
+	*/
 
   if (argc<10) {
     fprintf(stderr,"usage: %s k1 k2 d n chunksize clustersize infile outfile nproc\n",
@@ -1514,8 +1523,16 @@ int main(int argc, char **argv)
   strcpy(outfilename, argv[8]);
   nproc = atoi(argv[9]);
 
-  PFWORKERS =  nproc;  //parallelfor parallelism degree
+  /*	ompthreads = nproc;
+	nproc = 1;
+	omp_set_num_threads(ompthreads);
+  */
 
+//fastflow parallel for
+#ifdef FASTFLOW
+  PFWORKERS = nproc;
+  nproc = 1;
+#endif
 
   srand48(SEED);
   PStream* stream;
@@ -1531,43 +1548,40 @@ int main(int argc, char **argv)
 
   // Fastflow workers finds the  medians in the stream received.
   std::vector<std::unique_ptr<ff_node>> Workers;
-  for( int i=0; i<nproc; ++i){
-    Workers.push_back(make_unique<Worker>(dim,kmin,kmax,clustersize));  //(int d, long kMIN, long kMAX, long centersz )
+  for( int i=0; i<PFWORKERS; ++i){  // !!!!! insert new varibel fo number of workers in the farm !!
+    Workers.push_back(make_unique<mapWorker>(dim,kmin,kmax,clustersize));  //(int d, long kMIN, long kMAX, long centersz )
   }
 
   // Fastflow Farm declaration
   ff_Farm<Points> myFarm (std::move(Workers),emitter);
 
-  myFarm.remove_collector(); // remove the default collector.
 
-  //Fastflow collector receives the intermediate medians and produce te final k mediams.
-  lastStage collector(kmin,kmax,outfilename);
-
-  ff_Pipe<Points> pipe(myFarm,collector);
-
-  std::cout<<"\nParallel STREAMCLUSTER starts.\n\n";
-  double t1 = gettime();
-
-
-  if (pipe.run_and_wait_end()<0) {
-        error("running pipe\n");
+  if (myFarm.run_and_wait_end()<0) {
+        error("running farm\n");
         return -1;
   }
 
+
+
+/*
+  double t1 = gettime();
+
+  streamCluster(stream, kmin, kmax, dim, chunksize, clustersize, outfilename );
+
   double t2 = gettime();
-std::cout<< "\ntime = "<< t2-t1 <<std::endl;
+
+  printf("time = %lf\n",t2-t1);
 
   delete stream;
 
-#ifdef PROFILE
-    printf("time pgain = %lf\n", time_gain);
-    printf("time pgain_dist = %lf\n", time_gain_dist);
-    printf("time pgain_init = %lf\n", time_gain_init);
-    printf("time pselect = %lf\n", time_select_feasible);
-    printf("time pspeedy = %lf\n", time_speedy);
-    printf("time pshuffle = %lf\n", time_shuffle);
-    printf("time localSearch = %lf\n", time_local_search);
-#endif
-
+  printf("time pgain = %lf\n", time_gain);
+  printf("time pgain_dist = %lf\n", time_gain_dist);
+  printf("time pgain_init = %lf\n", time_gain_init);
+  printf("time pselect = %lf\n", time_select_feasible);
+  printf("time pspeedy = %lf\n", time_speedy);
+  printf("time pshuffle = %lf\n", time_shuffle);
+  printf("time localSearch = %lf\n", time_local_search);
+  printf("loops=%d\n", d);
+*/
   return 0;
 }
