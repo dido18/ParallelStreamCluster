@@ -441,7 +441,7 @@ struct EmitterChunks:ff_node_t<Points>{
       }
 
       // Point * p = (Point *)malloc(chunksize*sizeof(Point));
-      Point * const p = new Point[chunksize];
+      Point *p = new Point[chunksize];
       Points *points = new Points(dim, chunksize, p);
 
       for( int i = 0; i < chunksize; i++ ) {
@@ -494,7 +494,6 @@ struct mapWorker:ff_Map<Points>{
   bool* is_center; //whether a point is a center
   int* center_table; //index table of centers
 #ifdef FASTFLOW
-  //without PFWORKERS parameter all the cores available are used.
   ParallelFor pf;
   ParallelForReduce<double> pfr;
 #endif
@@ -564,6 +563,7 @@ struct mapWorker:ff_Map<Points>{
 
    /* send the K centers found to the collector*/
    ff_send_out(centers);
+   delete points;
 
 #ifdef PRINTINFO
    std::cout << "The worker " << get_my_id()<<" has sent the conters founded \n";
@@ -2418,22 +2418,14 @@ int main(int argc, char **argv)
   //pipe of farm and my collector
   ff_Pipe<Points> myPipe(myFarm, Collector);
 
-
+  double t1 = gettime();
   if (myPipe.run_and_wait_end()<0) {
         error("running Pipe\n");
         return -1;
   }
-
-
-
-/*
-  double t1 = gettime();
-
-  streamCluster(stream, kmin, kmax, dim, chunksize, clustersize, outfilename );
-
   double t2 = gettime();
 
-  printf("time = %lf\n",t2-t1);
+  printf("Total time = %lf\n",t2-t1);
 
   delete stream;
 
@@ -2445,6 +2437,7 @@ int main(int argc, char **argv)
   printf("time pshuffle = %lf\n", time_shuffle);
   printf("time localSearch = %lf\n", time_local_search);
   printf("loops=%d\n", d);
-*/
+
+
   return 0;
 }
