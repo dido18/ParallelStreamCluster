@@ -1,7 +1,7 @@
 ///Copyright (c) 2006-2009 Princeton University
 //All rights reserved.
 
-//Redistribution and use in source and binary forms, with or withou
+//Redistribution and use in source and binary forms, with or wit
 //modification, are permitted provided that the following conditions ar
 //    * Redistributions of source code must retain the above copyright
 //      notice, this list of conditions and the following disclaimer
