@@ -436,8 +436,8 @@ struct EmitterChunks:ff_node_t<Points>{
       //long* centerIDs = (long*)malloc(centersize*dim*sizeof(long));
 
       if( block == NULL ) {
-	fprintf(stderr,"not enough memory for a chunk!\n");
-	exit(1);
+          	fprintf(stderr,"not enough memory for a chunk!\n");
+          	exit(1);
       }
 
       // Point * p = (Point *)malloc(chunksize*sizeof(Point));
@@ -448,7 +448,7 @@ struct EmitterChunks:ff_node_t<Points>{
 	(points->p[i]).coord = &block[i*dim];
       }
 
-      
+
       size_t numRead  = stream->read(block, dim, chunksize);
 
       if(numRead==0) {
@@ -500,7 +500,7 @@ struct mapWorker:ff_Map<Points>{
 
   mapWorker(int d, long kMIN, long kMAX, long centersz ): dim(d),kmin(kMIN),kmax(kMAX),centersize(centersz){}
 
-  
+
     Points *svc(Points* points){
 
 #ifdef PRINTINFO
@@ -535,7 +535,7 @@ struct mapWorker:ff_Map<Points>{
 
    contcenters(points); //computer the means for the k clusters
 
- 
+
   //  this check is done by the collector
    /*
    if( kfinal + centers->num > centersize ) {
@@ -750,6 +750,9 @@ struct mapWorker:ff_Map<Points>{
     double t0 = gettime();
   #endif
 
+#ifdef PRINTINFO
+      fprintf(stderr, "Running pgain...");
+#endif
     //my block
     long bsize = points->num/nproc;
     long k1 = bsize * pid;
@@ -1173,7 +1176,7 @@ struct mapWorker:ff_Map<Points>{
   }
 
   /* compute approximate kmedian on the points */
-  float pkmedian(Points *points, long kmin, long kmax, long* kfinal,
+float pkmedian(Points *points, long kmin, long kmax, long* kfinal,
   	       int pid, pthread_barrier_t* barrier )
   {
     int i;
@@ -1433,14 +1436,14 @@ struct lastStage:ff_minode_t<Points> { // NOTE multi-input node
 #endif
 
   lastStage(int d, long kMIN, long kMAX, char* out, long clustersz):dim(d),kmin(kMIN), kmax(kMAX), clustersize(clustersz), outfile(out){}
-  
+
   int svc_init(){
     std::cout<<"Hello Collector is  (re-)starting..\n";
     counter = 0;
     float* centerBlock = (float*)malloc(clustersize*dim*sizeof(float) );
 
-    Point *p = (Point *)malloc(clustersize*sizeof(Point));  
-    cluster_centers = new Points(dim, counter, p);  //initially zero centers 
+    Point *p = (Point *)malloc(clustersize*sizeof(Point));
+    cluster_centers = new Points(dim, counter, p);  //initially zero centers
 
     for( int i = 0; i< clustersize; i++ ) {
      cluster_centers->p[i].coord = &centerBlock[i*dim];
@@ -1455,14 +1458,14 @@ struct lastStage:ff_minode_t<Points> { // NOTE multi-input node
   // std::cout<<"collector centers revceived: \n";
   // printPoints(centers);
 #ifdef PRINTINFO
-  
+
 #endif
     if(centers->num + counter > clustersize){
       std::cout<<"No more space for centers ...\n";
       return (Points*)EOS;
     }
-      
-  
+
+
     for(int i=0; i<centers->num; ++i){
       cluster_centers->p[counter+i].weight = centers->p[i].weight;
       cluster_centers->p[counter+i].assign = centers->p[i].assign;
@@ -1477,14 +1480,14 @@ struct lastStage:ff_minode_t<Points> { // NOTE multi-input node
     delete centers;
     return GO_ON;
   }
-      
+
   void svc_end(){
 
     // after receiving all centers
     switch_membership = (bool*)malloc(cluster_centers->num*sizeof(bool));
     is_center = (bool*)calloc(cluster_centers->num,sizeof(bool));
     center_table = (int*)malloc(cluster_centers->num*sizeof(int));
-    
+
     long kfinal;
 
     localSearch(cluster_centers, kmin, kmax , &kfinal ); // parallel
@@ -1492,13 +1495,13 @@ struct lastStage:ff_minode_t<Points> { // NOTE multi-input node
     //    outcenterIDs( centers, centerIDs, outfile);
     std::cout<<"Collector has found "<< cluster_centers->num<< " centers.\n";
   //    printPoints(cluster_centers);
-    
+
     delete  cluster_centers;
     //return GO_ON;
 
   }
 
-  
+
   /* run speedy on the points, return total cost of solution */
   float pspeedy(Points *points, float z, long *kcenter, int pid, pthread_barrier_t* barrier)
   {
