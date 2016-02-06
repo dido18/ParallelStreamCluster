@@ -18,7 +18,7 @@ LDFLAGS 	= -pthread
 
 OPTFLAGS	= -O3           # -finline-functions -DNDEBUG  #-DPRINTINFO
 
-TARGETS		= ff_stream_cluster
+TARGETS		= ff_stream_cluster ff_stream_cluster_noFarm
 
 .PHONY:  all clean cleanall
 .SUFFIXES: .cpp
@@ -26,13 +26,14 @@ TARGETS		= ff_stream_cluster
 % :%.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OPTFLAGS) -o $@ $< $(LDFLAGS)
 
-all : $(TARGETS) install
+all : $(TARGETS) 
 
 clean	:
 	rm -f $(TARGETS)
+
 cleanall : clean
 	\rm -f *.o *~
 
 install:
 	mkdir -p ../bin
-	mv -f $(TARGETS) ../bin/$(TARGETS)
+	mv -f $(TARGETS) ../bin/

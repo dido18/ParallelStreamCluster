@@ -1,0 +1,35 @@
+PREFIX=${PARSECDIR}/pkgs/kernels/streamcluster/inst/${PARSECPLAT}
+
+TARGET_C = sc_original
+
+TARGET_O = sc_omp
+
+# ifdef version
+#  ifeq "$(version)" "parallel"
+#    CXXFLAGS :=	$(CXXFLAGS) -DENABLE_THREADS -pthread
+#  endif
+# endif
+
+CXX=icpc   -DNO_DEFAULT_MAPPING
+LDFLAGS=
+
+CXXFLAGS= -Wall
+OPTFLAGS = -O3
+
+all: original omp
+
+original:
+	$(CXX) $(CXXFLAGS)  streamcluster_original.cpp -o $(TARGET_C) $(OPTFLAGS) -DENABLE_THREADS -pthread
+
+omp:
+	$(CXX) $(CXXFLAGS) streamcluster_omp.cpp  -o $(TARGET_O) $(OPTFLAGS) -fopenmp
+
+
+clean:
+	rm -f *.o *~ *.txt sc_original sc_omp
+
+# dido: run install to put the binary inside /bin in the project
+install:
+		mkdir -p ../bin
+		mv -f $(TARGET_O) ../bin/
+		mv -f $(TARGET_C) ../bin/
