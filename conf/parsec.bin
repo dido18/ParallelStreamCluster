@@ -1,0 +1,4 @@
+
+BIN_DIR="."
+
+run_exec="${BIN_DIR}/bin/parsec_streamcluster"

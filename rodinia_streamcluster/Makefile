@@ -1,8 +1,8 @@
 PREFIX=${PARSECDIR}/pkgs/kernels/streamcluster/inst/${PARSECPLAT}
 
-TARGET_C = sc_original
+TARGET_C = rodinia_original
 
-TARGET_O = sc_omp
+TARGET_O = rodinia_omp
 
 # ifdef version
 #  ifeq "$(version)" "parallel"
@@ -24,7 +24,7 @@ omp:
 
 
 clean:
-	rm -f *.o *~ *.txt sc_original sc_omp
+	rm -f *.o *~ *.txt rodinia_original rodinia_omp
 
 # dido: run install to put the binary inside /bin in the project
 install:

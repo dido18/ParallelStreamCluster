@@ -130,7 +130,6 @@ static int c, d;  //c counts the number of pgain class, d count number of loops
 //static int ompthreads;
 
 
-
 // instrumentation code
 #ifdef PROFILE
 double time_local_search;

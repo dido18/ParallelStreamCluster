@@ -12,23 +12,5 @@
 # be referenced here.
 
 
-# Binary file to execute, relative to installation root
-run_exec="bin/streamcluster"
-
 # Arguments to use
-run_args="2 5 1 10 10 5 none output.txt ${NTHREADS}"
-
-case $1 in
-    apple)
-        echo 'Mmmmh... I like those!'
-        ;;
-    banana)
-        echo 'Hm, a bit awry, no?'
-        ;;
-    orange|tangerine)
-        echo $'Eeeks! I don\'t like those!\nGo away!'
-        exit 1
-        ;;
-    *)
-        echo "Unknown fruit - sure it isn't toxic?"
-esac
+run_args="2 5 1 10 10 5 none "

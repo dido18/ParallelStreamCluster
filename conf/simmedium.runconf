@@ -12,9 +12,6 @@
 # be referenced here.
 
 
-# Binary file to execute, relative to installation root
-run_exec="bin/streamcluster"
 
 # Arguments to use
-run_args="10 20 64 8192 8192 1000 none output.txt ${NTHREADS}"
-
+run_args="10 20 64 8192 8192 1000 none "

@@ -1,0 +1,5 @@
+
+
+BIN_DIR="."
+
+run_exec="${BIN_DIR}/bin/rodinia_omp"
