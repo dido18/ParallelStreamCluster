@@ -59,15 +59,8 @@ int  PFGRAIN = 0;     //dafualt static scheduling of iterations
 #define CACHE_LINE 512 // cache line in byte
 
 #ifdef FASTFLOW
-
-//  printf("pgain pthread %d begin\n",PFWORKERS);
-  //std::cout <<" PFWORKERS " << PFWORKERS ;
-//  ParallelFor pf(PFWORKERS); //without PFWORKERS parameter all the cores available are used.
   ParallelFor pf;
-//  ParallelForReduce<double> pfr(PFWORKERS);
-  //std::cout <<" PFWORKERS " << PFWORKERS ;
-	   ParallelForReduce<double> pfr;
-  //spinwait=true, long is the reduciton variable type.
+	ParallelForReduce<double> pfr;
 #endif
 
 /* this structure represents a point */
@@ -470,11 +463,11 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
 
 // OpenMP parallelization 	#pragma omp parallel for
 
-//##############################################################################################
-//##############################################################################################
-//#####################################   PARALLELFOR_REDUCE  ##################################
-//##############################################################################################
-//##############################################################################################
+//##############################################################################
+//##############################################################################
+//########################   PARALLEL_REDUCE  ##################################
+//##############################################################################
+//##############################################################################
 
 //	#pragma omp parallel for reduction(+: cost_of_opening_x)
 
@@ -600,9 +593,11 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
   if ( gl_cost_of_opening_x < 0 ) {
     //  we'd save money by opening x; we'll do it
 
-    //#######################################################################################
-    //##################################### PARALLELFOR ####################################
-    //######################################################################################
+//##############################################################################
+//##############################################################################
+//########################### PARALLEL_FOR #####################################
+//##############################################################################
+//##############################################################################
 
     //		#pragma omp parallel for
 #ifdef FASTFLOW
@@ -1292,10 +1287,11 @@ int main(int argc, char **argv)
   char *infilename = new char[MAXNAMESIZE];
   long kmin, kmax, n, chunksize, clustersize;
   int dim;
-  /*      int numthreads;
+
+	/*int numthreads;*/
 	c = 0;
 	d = 0;
-	*/
+
 
   if (argc<10) {
     fprintf(stderr,"usage: %s k1 k2 d n chunksize clustersize infile outfile nproc\n",
