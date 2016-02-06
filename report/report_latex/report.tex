@@ -1,0 +1,95 @@
+%\documentclass[11pt,a4paper]{article}
+\documentclass[12pt]{article}
+
+\usepackage{amsmath,amssymb,wasysym} % per simbolo di spunta\usepackage{amsmath,amssymb,wasysym}
+
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{geometry}
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs
+\renewcommand{\labelenumi}{\alph{enumi}.} % Make numbering in the enumerate environment by letter rather than number (e.g. section 6)
+
+\title{PAD final project}
+\author{Davide Neri}
+\date{\today}
+
+\begin{document}
+\maketitle    % Insert the title, author and date
+\begin{center}
+Master Degree in Computer Science and Networking 
+A-Y 2015-16
+
+\end{center}
+
+\begin{center}
+
+\begin{tabular}{l r}
+Student: & Davide Neri \\ % Date the experiment was performed
+Instructor: & Marco Danelutto \\% Instructor/supervisor
+Course: & Distributed Systems: Paradigms and models\\
+\end{tabular}
+\end{center}
+
+\begin{abstract} 
+The report describes the final project addressing the \textbf{StreamCluster (SC)} application. The sequential code is provided by \emph{C} code (PARSEC and RODINIA Benchmark Suite). The parallel version is implemented using \textbf{FastFlow} framework and \emph{C++} programming language.
+\end{abstract}
+
+\section{Design choice}
+
+The algorithm spend most of the time evaluating the gain of opening a new center (\texttt{pgain} function).  For every new point, it weights the cost of making it a new center. If the heuristic determines that the change would be advantageous  ( \texttt{gl_cost_of_opening_x < 0}) the algorithm reassigning some of the existing point to the new point that become a new center.
+
+The points arrives in chuncks. For every chunk received, the application  computes the centers points and put them into a data structure. When the stream of chunks are finished, the algorithm finds the center points among the centers stored.
+
+A \emph{task decomposition} pattern can be used  to model parallel execution of chunks points of the stream.
+
+For a single chunk  can be used a \emph{data decomposition} pattern to find the intermediate centers in the chunk.
+The application doesn't require any particular order of the chunks, because finding the intermediate centers points in different chunks is totally indipendent of the order in wich the chunks arrives.
+
+The target platform is a shared memory machine (16 cores on host, 240 cores on Xeon phi machine).
+
+The parameters can be tuned for having different possibility:  parallelism degree in the task-farm patten and map parallel. With 1 worker is exploit only data decomposition, with 1 tjhread can be collapase using only taskfarm computation.
+
+
+The task-parallelism is used to divide the stream of points in chunks and send the chunks to the workers. 
+Each worker is in charge to compute a single chunk of points and find the centers, data parallel pattern is using loop parallelism.
+
+
+Comparing parallel design patterns.
+
+
+
+\section{Compile,run and tests the project}
+the short user manual should be detailed enough to enable me to run tests with your software (what should I compile, how, which are the parameters to use to launch experiments, how can I vary parallelism degree, which input files do I need, where are they)
+
+\section{Experimantal results}
+experiment results should show scalability, speedup and efficiency of the implementation(s) as well as the difference among the measured values and the expected ones (according to the performance models)
+
+\subsection{Scalabiility,efficiency,speedup }
+
+
+In this section is described the peer sampling-service with the generic protocol for the dissemination of the information in the system. The peer-sampling service is based itself on a gossip-based protocol, in which each node keeps only a small subset of nodes to communicates with.
+
+
+
+%\begin{figure}
+%\centering
+%\includegraphics[scale=0.7]{images/activePassive.png}
+%\caption{Active and passive thread protocols.}
+%\label{fig:activePassive}
+%\end{figure}
+
+
+
+\begin{thebibliography}{9}
+
+\item
+Mark Jelasity, Spyros Voulgaris, Rachid Guerraoui, Anne Marie Kermar-
+rec, Maarten van Steen, \emph{Gossip-based peer sampling,} ACM Transaction on
+Computer Systems, October 2007.
+\end{thebibliography}
+
+\end{document}

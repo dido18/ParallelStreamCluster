@@ -503,6 +503,7 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
   pfr.parallel_reduce(cost_of_opening_x, 0.0 , k1, k2, 1, PFGRAIN, bodyF, reduceF,PFWORKERS);
 
 #else // ORIGIANL COMPUTATION
+#
  for ( i = k1; i < k2; i++ ) {
     float x_cost = dist(points->p[i], points->p[x], points->dim)
       * points->p[i].weight;
@@ -661,7 +662,7 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
 #ifdef PROFILE
   double t3 = gettime();
   if( pid==0 )
-  time_gain += t3-t0;
+    time_gain += t3-t0;
 #endif
 	//printf("cost=%f\n", -gl_cost_of_opening_x);
   return -gl_cost_of_opening_x;
@@ -1327,6 +1328,7 @@ int main(int argc, char **argv)
 //fastflow parallel for
 #ifdef FASTFLOW
   PFWORKERS = nproc;
+	//PFGRAIN =
   nproc = 1;
 #endif
 
