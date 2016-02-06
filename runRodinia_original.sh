@@ -2,11 +2,15 @@
 
 mkdir -p run
 
+USAGE=" Usage:  $0  [test | simsmall | simmedium | simlarge | simdev | native ] noThreads
+      \n make install' if binary file are not present"
+
+
 NTHREADS=1
 
 if [ $# -lt 2 ];
    then
-   echo "Usage:  $0  [test | simsmall | simmedium | simlarge | simdev]  NThreads=1 "
+      echo -e ${USAGE}
    exit 1
 fi
 
@@ -22,7 +26,7 @@ case $1 in
         ;;
     simsmall)
         echo "Running $1 with ${NTHREADS} threads"
-        ${BINPATH} 10 20 32 4096 4096 1000 none ${OUTPUT}${NTHREADS}
+        ${BINPATH} 10 20 32 4096 4096 1000 none ${OUTPUT} ${NTHREADS}
         ;;
     simmedium)
         echo "Running $1 with ${NTHREADS} threads"
@@ -36,7 +40,10 @@ case $1 in
         echo "Running $1 with ${NTHREADS} threads"
         ${BINPATH}  3 10 3 16 16 10 none ${OUTPUT} ${NTHREADS}
         ;;
+   native)
+         echo "Running $1 with $2 threads ...."
+         ${BINPATH}  10 20 128 1000000 200000 5000 none ${OUTPUT_PATH} ${NTHREADS}
+         ;;
     *)
-        echo "Usage:  $0 [test | simsmall | simmedium | simlarge | simdev]"
-        echo "       'make install' if binary file are not present"
+        echo -e ${USAGE}
 esac

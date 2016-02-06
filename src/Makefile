@@ -19,7 +19,7 @@ LDFLAGS 	= -pthread
 
 OPTFLAGS	= -O3        #-DPRINTINFO  # -finline-functions -DNDEBUG  #-DPRINTINFO
 
-TARGETS		=  ff_stream_cluster_FarmMap  ff_stream_cluster_noFarm #ff_stream_cluster
+TARGETS		=  ff_stream_cluster_FarmMap  ff_stream_cluster_noFarm ff_stream_cluster
 
 
 .PHONY: all clean cleanall

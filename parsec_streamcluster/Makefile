@@ -2,7 +2,7 @@
 
 PREFIX=${PARSECDIR}/pkgs/kernels/streamcluster/inst/${PARSECPLAT}
 
-TARGET=streamcluster
+TARGET=parsec_streamcluster
 OBJS=streamcluster.o
 
 
