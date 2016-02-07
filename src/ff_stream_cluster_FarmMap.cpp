@@ -49,15 +49,17 @@ using namespace ff;
 /* higher ITER also scales the running time almost linearly */
 #define ITER 3 // iterate ITER* k log k times; ITER >= 1
 
-//#define PRINTINFO //comment this out to disable output
+#define PRINTINFO //comment this out to disable output
 #define PROFILE // comment this out to disable instrumentation code
 //#define ENABLE_THREADS  // comment this out to disable threads
 //#define INSERT_WASTE //uncomment this to insert waste computation into dist function
 
 // fastflow parallefor parameters used in pgain() parallelization
 #define FASTFLOW      //comment this out to enable fastflow parallel for in pgain function
+
+int  FARM_WORKERS = 1; // number of workers in the farm
 int  PFWORKERS = 1;   // parallel_for parallelism degree
-int  PFGRAIN = 0;     //dafualt static scheduling of iterations
+int  PFGRAIN = 0;     // dafualt static scheduling of iterations
 
 #define CACHE_LINE 512 // cache line in byte
 
@@ -69,9 +71,9 @@ int  PFGRAIN = 0;     //dafualt static scheduling of iterations
 //#######################################################
 
 struct Point{
-  Point() {} //default constructor
+  //  Point() {} //default constructor
   float weight;
-  float *coord;
+   float *coord;
   long assign;  // number of point where this one is assigned
   float cost;  // cost of that assignment, weight*distance
   long ID;   //point ID: the position on the stream (dido).
@@ -79,8 +81,9 @@ struct Point{
 
 // this is the array of points
 struct Points {
-  Points(int d, long n, Point* const  point):num(n),dim(d),p(point){}
+  Points(int d, long n, Point* const  point):num{n},dim{d},p(point){}
 
+  ~Points(){delete []p;};
   long num; // number of points; may not be N if this is a sample
   int dim;  // dimensionality
   Point * const p; // the array itself
@@ -429,12 +432,13 @@ struct EmitterChunks:ff_node_t<Points>{
   Points *svc (Points *){  //generates the stream
 
   long IDoffset = 0;
-  while(1){
+
+  while(!stream->feof()){
       float* block = (float*)malloc(chunksize*dim*sizeof(float) );
       //float* centerBlock = (float*)malloc(centersize*dim*sizeof(float) );
       //long* centerIDs = (long*)malloc(centersize*dim*sizeof(long));
 
-      if( block == NULL ) {
+      if(block == NULL ) {
           	fprintf(stderr,"not enough memory for a chunk!\n");
           	exit(1);
       }
@@ -444,9 +448,8 @@ struct EmitterChunks:ff_node_t<Points>{
       Points *points = new Points(dim, chunksize, p);
 
       for( int i = 0; i < chunksize; i++ ) {
-	(points->p[i]).coord = &block[i*dim];
+	(points->p[i]).coord = &block[i*dim];  // points contains pointer to the block array containting the coordinates
       }
-
 
       size_t numRead  = stream->read(block, dim, chunksize);
 
@@ -483,7 +486,7 @@ struct EmitterChunks:ff_node_t<Points>{
 // Map worker
 
 /* worker receive a chunk and produce k centers of the chunk received.*/
-struct mapWorker:ff_Map<Points>{
+struct mapWorker:ff_Map<Points,Points,double>{
 
   int dim;
   long kmin;
@@ -492,29 +495,35 @@ struct mapWorker:ff_Map<Points>{
   bool *switch_membership; //whether to switch membership in pgain
   bool* is_center; //whether a point is a center
   int* center_table; //index table of centers
+/*
 #ifdef FASTFLOW
   ParallelFor pf;
   ParallelForReduce<double> pfr;
 #endif
+*/
+  using map = ff_Map<Points,Points,double>; //double is the type of reduction variable
 
-  mapWorker(int d, long kMIN, long kMAX, long centersz ): dim(d),kmin(kMIN),kmax(kMAX),centersize(centersz){}
+  mapWorker(int d, long kMIN, long kMAX, long centersz ):map(PFWORKERS), dim{d},kmin{kMIN},kmax{kMAX},centersize{centersz}{}
 
 
-    Points *svc(Points* points){
+ Points *svc(Points* points){
 
 #ifdef PRINTINFO
     std::cout << "The worker " << get_my_id()<<" has received a chunk with " << points->num << " points " <<" \n";
-  //printPoints(points);
 #endif
+    //  bool *switch_membership; //whether to switch membership in pgain
+    //bool* is_center; //whether a point is a center
+    //int* center_table; //index table of centers
 
     switch_membership = (bool*)malloc(points->num*sizeof(bool));
     is_center = (bool*)calloc(points->num,sizeof(bool));
     center_table = (int*)malloc(points->num*sizeof(int));
 
     float* centerBlock = (float*)malloc(centersize*dim*sizeof(float) );
-    //long* centerIDs = (long*)malloc(centersize*dim*sizeof(long)); //dido: substituted by ID in point
+   //long* centerIDs = (long*)malloc(centersize*dim*sizeof(long)); //dido: substituted by ID in point
 
-    Point *p = (Point *)malloc(centersize*sizeof(Point));
+   // Point *p = (Point *)malloc(centersize*sizeof(Point));
+    Point *p  = new Point[centersize];
     Points *centers = new Points(dim, 0, p);  //num=0  zero centers initially
 
     for( int i = 0; i< centersize; i++ ) {
@@ -749,9 +758,6 @@ struct mapWorker:ff_Map<Points>{
     double t0 = gettime();
   #endif
 
-#ifdef PRINTINFO
-      fprintf(stderr, "Running pgain...");
-#endif
     //my block
     long bsize = points->num/nproc;
     long k1 = bsize * pid;
@@ -877,8 +883,7 @@ struct mapWorker:ff_Map<Points>{
       }
     };
 
-    //
-    pfr.parallel_reduce(cost_of_opening_x, 0.0 , k1, k2, 1, PFGRAIN, bodyF, reduceF,PFWORKERS);
+    map::parallel_reduce(cost_of_opening_x, 0.0 , k1, k2, 1, PFGRAIN, bodyF, reduceF,PFWORKERS);
 
   #else // ORIGIANL COMPUTATION
    for ( i = k1; i < k2; i++ ) {
@@ -979,7 +984,7 @@ struct mapWorker:ff_Map<Points>{
   #ifdef FASTFLOW
       //  we'd save money by opening x; we'll do it
 
-        pf.parallel_for(k1, k2 ,1 ,PFGRAIN, [&](const long i){
+        map::parallel_for(k1, k2 ,1 ,PFGRAIN, [&](const long i){
   				  bool close_center = gl_lower[center_table[points->p[i].assign]] > 0 ;
   				  if ( switch_membership[i] || close_center ) {
   				    // Either i's median (which may be i itself) is closing,
@@ -988,7 +993,7 @@ struct mapWorker:ff_Map<Points>{
   				      dist(points->p[i], points->p[x], points->dim);
   				    points->p[i].assign = x;
   				  }
-  	},PFWORKERS); // using all the PFWORKERS
+  	}); // using all the PFWORKERS
 
   #else //original computation
 
@@ -1428,6 +1433,7 @@ struct lastStage:ff_minode_t<Points> { // NOTE multi-input node
   bool* switch_membership;
   bool* is_center;
   int *center_table;
+
 #ifdef FASTFLOW
   //without PFWORKERS parameter all the cores available are used.
   ParallelFor pf;
@@ -2350,13 +2356,13 @@ int main(int argc, char **argv)
   char *infilename = new char[MAXNAMESIZE];
   long kmin, kmax, n, chunksize, clustersize;
   int dim;
-  /*      int numthreads;
-	c = 0;
-	d = 0;
-	*/
+  /*      int numthreads;/*/
+  c = 0;
+  d = 0;
 
-  if (argc<10) {
-    fprintf(stderr,"usage: %s k1 k2 d n chunksize clustersize infile outfile nproc\n",
+
+  if (argc<11) {
+    fprintf(stderr,"usage: %s k1 k2 d n chunksize clustersize infile outfile farmWorkers mapWorkers \n",
 	    argv[0]);
     fprintf(stderr,"  k1:          Min. number of centers allowed\n");
     fprintf(stderr,"  k2:          Max. number of centers allowed\n");
@@ -2366,7 +2372,8 @@ int main(int argc, char **argv)
     fprintf(stderr,"  clustersize: Maximum number of intermediate centers\n");
     fprintf(stderr,"  infile:      Input file (if n<=0)\n");
     fprintf(stderr,"  outfile:     Output file\n");
-    fprintf(stderr,"  nproc:       Number of threads to use\n");
+    fprintf(stderr,"  farmWorkers: Number of workers to use in the farm\n");
+    fprintf(stderr,"  pfWorkers:   Number of workers to use in the parallel for\n");
     fprintf(stderr,"\n");
     fprintf(stderr, "if n > 0, points will be randomly generated instead of reading from infile.\n");
     exit(1);
@@ -2381,14 +2388,10 @@ int main(int argc, char **argv)
   strcpy(outfilename, argv[8]);
   nproc = atoi(argv[9]);
 
-  /*	ompthreads = nproc;
-	nproc = 1;
-	omp_set_num_threads(ompthreads);
-  */
-
-//fastflow parallel for
 #ifdef FASTFLOW
-  PFWORKERS = nproc;
+  PFWORKERS =  atoi(argv[10]);
+  FARM_WORKERS = nproc;
+  PFGRAIN = 0;
   nproc = 1;
 #endif
 
@@ -2406,18 +2409,19 @@ int main(int argc, char **argv)
 
   // Fastflow workers finds the  medians in the stream received.
   std::vector<std::unique_ptr<ff_node>> Workers;
-  for( int i=0; i<PFWORKERS; ++i){  // !!!!! insert new varibel fo number of workers in the farm !!
-    Workers.push_back(make_unique<mapWorker>(dim,kmin,kmax,clustersize));  //(int d, long kMIN, long kMAX, long centersz )
+
+  for( int i=0; i<FARM_WORKERS; ++i){
+    Workers.push_back(make_unique<mapWorker>(dim, kmin, kmax, clustersize));  //(int d, long kMIN, long kMAX, long centersz )
   }
 
   // Fastflow Farm declaration
   ff_Farm<Points> myFarm (std::move(Workers),emitter);
   myFarm.remove_collector(); // remove the default collector
 
-  //collector
+  //Collector
   lastStage Collector(dim,kmin,kmax,outfilename,clustersize);//long kMIN, long kMAX, char* out, long clustersz);
 
-  //pipe of farm and my collector
+  //Pipe of farm and my collector
   ff_Pipe<Points> myPipe(myFarm, Collector);
 
   double t1 = gettime();
@@ -2427,7 +2431,7 @@ int main(int argc, char **argv)
   }
   double t2 = gettime();
 
-  printf("Total time = %lf\n",t2-t1);
+  printf("time = %lf\n",t2-t1);
 
   delete stream;
 
