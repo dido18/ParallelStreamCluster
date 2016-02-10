@@ -19,10 +19,10 @@ LDFLAGS 	= -pthread
 
 OPTFLAGS	= -O3        #-DPRINTINFO  # -finline-functions -DNDEBUG  #-DPRINTINFO
 
-TARGETS		=  ff_stream_cluster_FarmMap  #ff_stream_cluster_Map 
+TARGETS		=  main
 
 
-.PHONY: all clean cleanall install
+.PHONY: all clean cleanall #install
 .SUFFIXES: .cpp
 
 %:%.cpp

@@ -6,6 +6,9 @@ bin/
 run/
 
 
+.idea
+
+
 # Compiled Object files
 *.slo
 *.lo
