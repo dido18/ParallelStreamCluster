@@ -8,7 +8,7 @@
 #include <ff/node.hpp>
 #include "Points.h"
 #include "PStream.h"
-#include "StreamCluster.h"
+#include "UtilClusters.h"
 
 
 using  namespace ff;
@@ -20,7 +20,7 @@ public:
     long chunksize;
     int dim;
     long IDoffset = 0;   // Count the points read from the stream.
-    StreamCluster sc;
+    UtilClusters sc;
 
 
     Emitter (PStream * Stream, long cksize, long d, long kmin, long kmax, int pf_workers);

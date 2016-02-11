@@ -38,7 +38,7 @@ Points* Emitter::svc(Points * points) {
                 ff_send_out(EOS);
             }*/
 
-            cout << "Emitter read :: " << numRead << " points" << endl;
+            cout << "Emitter reads  " << numRead << " points" << endl;
 
             if (stream->ferror() || numRead < (unsigned int) chunksize && !stream->feof()) {
                 fprintf(stderr, "error reading data!\n");
@@ -53,9 +53,30 @@ Points* Emitter::svc(Points * points) {
 
             IDoffset += numRead;
 
+
             long k = sc.findCenters(points);//, kmin, kmax,dim);// centersize);
+           // points->to_string();
 
             cout<<" found "<<k<< " centers"<<endl;
+
+            sc.contcenters(points);
+            cout<<" finished cont "<<endl;
+
+            Points * centers = new Points(dim, chunksize);
+            centers->num = 0; // must be setted to zero initially
+
+            float* centerBlock = (float*)malloc(chunksize*dim*sizeof(float) );
+
+            for( int i = 0; i< chunksize; i++ ) {
+                centers->p[i].coord = &centerBlock[i*dim];
+                centers->p[i].weight = 1.0;
+            }
+
+
+            sc.mycopycenters(points,centers);
+            cout<<" finished copy"<<endl;
+            centers->to_string();
+
             ff_send_out(points);
         }
 

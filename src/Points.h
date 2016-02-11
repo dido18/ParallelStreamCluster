@@ -11,32 +11,32 @@
 
 using namespace std;
 
-struct  Point {
-  Point(Point&&) = delete;  //move
-  Point(const Point&) = delete;
+struct Point {
+    Point(Point &&) = delete;  //move
+    Point(const Point &) = delete;
 
-   Point(Point& p) : weight(p.weight), coord(p.coord), assign(p.assign),
-                  cost(p.cost), ID(p.ID){}
-   Point& operator=(const Point& p) {
-     weight = p.weight;
-     coord = p.coord;
-     assign = p.assign;
-     cost = p.cost;
-     ID = p.ID;
-     return *this;
-  }
+    Point(Point &p) : weight(p.weight), coord(p.coord), assign(p.assign),
+                      cost(p.cost), ID(p.ID) { }
 
+    Point &operator=(const Point &p) {
+        weight = p.weight;
+        coord = p.coord;
+        assign = p.assign;
+        cost = p.cost;
+        ID = p.ID;
+        return *this;
+    }
 
-	Point() { }
+    Point() { }
 
-  ~Point(){ }
+    ~Point() { }
 
-  float weight;
-  float* coord; //coord points to an array of dim long
+    float weight;
+    float *coord;  //coord points to an array of dim long
 
-  long assign;  // number of point where this one is assigned
-  float cost;  // cost of that assignment, weight*distance
-  long ID;   //point ID: the position on the stream (dido).
+    long assign;   // number of point where this one is assigned
+    float cost;    // cost of that assignment, weight*distance
+    long ID;       //point ID: the position on the stream (dido).
 };
 
 // this is the array of points
@@ -46,28 +46,31 @@ public:
     long num; // number of points; may not be N if this is a sample
     int dim;  // dimensionality
 
-    std::unique_ptr<Point[]> p; // the array itself
-   //  std::vector<Point> p;
+    //std::unique_ptr<Point[]> p;   // the array itself
+    Point * p;
 
-  Points(Points&&) = delete;
-  Points(const Points&) = delete;
-  Points(Points&) = delete;
-  Points& operator=(const Points&) = delete;
-    //C& operator= (const C&);
-    Points(int d, long n):num{n},dim{d}, p(new Point[n]){}
+    Points(Points &&) = delete;
 
-  ~Points(){};
+    Points(const Points &) = delete;
 
-  void to_string(){
-    for(int i = 0; i < num; ++i){
-        cout << p[i].ID << endl;
-        cout << p[i].weight << endl;
-      for(int k=0; k < dim; ++k){
-         cout << p[i].coord[k] << " ";
-      }
-      cout<< endl<<endl;
+    Points(Points &) = delete;
+
+    Points &operator=(const Points &) = delete;
+
+    Points(int d, long n) : num{n}, dim{d}, p(new Point[n]) { }
+
+    ~Points() { };
+
+    void to_string() {
+        for (int i = 0; i < num; ++i) {
+            cout << p[i].ID << endl;
+            cout << p[i].weight << endl;
+            for (int k = 0; k < dim; ++k) {
+                cout << p[i].coord[k] << " ";
+            }
+            cout << endl << endl;
+        }
     }
-  }
 
 };
 

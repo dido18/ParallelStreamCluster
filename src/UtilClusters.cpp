@@ -2,8 +2,7 @@
 // Created by dido-ubuntu on 10/02/16.
 //
 
-#include "StreamCluster.h"
-#include "../StreamCluster++.h"
+#include "UtilClusters.h"
 
 
 /* increase this to reduce probability of random error */
@@ -23,8 +22,8 @@
 #define CACHE_LINE 512 // cache line in byte
 
 //int PFGRAIN = 0;
-int StreamCluster::PFWORKERS = 1;
-int StreamCluster::nproc = 1;
+int UtilClusters::PFWORKERS = 1;
+int UtilClusters::nproc = 1;
 
 // instrumentation code
 #ifdef PROFILE
@@ -38,9 +37,9 @@ int StreamCluster::nproc = 1;
 #endif
 
 
-StreamCluster::StreamCluster(int pf_workers, long kMin, long kMax): pfWorkers{pf_workers},kmin{kMin},kmax{kMax} {}
+UtilClusters::UtilClusters(int pf_workers, long kMin, long kMax): pfWorkers{pf_workers}, kmin{kMin}, kmax{kMax} {}
 
-long StreamCluster::findCenters(Points *points) {
+long UtilClusters::findCenters(Points *points) {
 
     switch_membership = (bool*)malloc(points->num*sizeof(bool));
     is_center = (bool*)calloc(points->num,sizeof(bool));
@@ -52,7 +51,7 @@ long StreamCluster::findCenters(Points *points) {
 }
 
 /* compute Euclidean distance squared between two points */
-float StreamCluster::dist(Point p1, Point p2, int dim) {
+float UtilClusters::dist(Point p1, Point p2, int dim) {
     int i;
     float result = 0.0;
     for (i = 0; i < dim; i++)
@@ -65,13 +64,13 @@ float StreamCluster::dist(Point p1, Point p2, int dim) {
     return (result);
 }
 
-double StreamCluster::gettime() {
+double UtilClusters::gettime() {
     struct timeval t;
     gettimeofday(&t, NULL);
     return (double) t.tv_sec + t.tv_usec * 1e-6;
 }
 
-void StreamCluster::shuffle(Points *points){
+void UtilClusters::shuffle(Points *points){
 #ifdef PROFILE
     double t1 = gettime();
 #endif
@@ -90,7 +89,7 @@ void StreamCluster::shuffle(Points *points){
 }
 
 /* shuffle an array of integers */
-void StreamCluster::intshuffle(int *intarray, int length) {
+void UtilClusters::intshuffle(int *intarray, int length) {
 #ifdef PROFILE
     double t1 = gettime();
 #endif
@@ -119,7 +118,7 @@ double waste(double s )
 #endif
 
 /* run speedy on the points, return total cost of solution */
-float StreamCluster::pspeedy(Points *points, float z, long *kcenter, int pid, pthread_barrier_t* barrier) {
+float UtilClusters::pspeedy(Points *points, float z, long *kcenter, int pid, pthread_barrier_t* barrier) {
 #ifdef PROFILE
     double t1 = gettime();
 #endif
@@ -267,7 +266,7 @@ float StreamCluster::pspeedy(Points *points, float z, long *kcenter, int pid, pt
     return(totalcost);
 }
 
-int StreamCluster::selectfeasible_fast(Points *points, int **feasible, int kmin, int pid, pthread_barrier_t* barrier)
+int UtilClusters::selectfeasible_fast(Points *points, int **feasible, int kmin, int pid, pthread_barrier_t* barrier)
 {
 #ifdef PROFILE
     double t1 = gettime();
@@ -342,7 +341,7 @@ int StreamCluster::selectfeasible_fast(Points *points, int **feasible, int kmin,
     return numfeasible;
 }
 
-double StreamCluster::pgain(long x, Points *points, double z, long int *numcenters, int pid, pthread_barrier_t *barrier) {
+double UtilClusters::pgain(long x, Points *points, double z, long int *numcenters, int pid, pthread_barrier_t *barrier) {
     //  printf("pgain pthread %d begin\n",pid);
 #ifdef ENABLE_THREADS
     pthread_barrier_wait(barrier);
@@ -652,9 +651,9 @@ double StreamCluster::pgain(long x, Points *points, double z, long int *numcente
 /* halt if there is < e improvement after iter calls to gain */
 /* feasible is an array of numfeasible points which may be centers */
 
-float StreamCluster::pFL(Points *points, int *feasible, int numfeasible,
-          float z, long *k, double cost, long iter, float e,
-          int pid, pthread_barrier_t* barrier)
+float UtilClusters::pFL(Points *points, int *feasible, int numfeasible,
+                        float z, long *k, double cost, long iter, float e,
+                        int pid, pthread_barrier_t* barrier)
 {
 #ifdef ENABLE_THREADS
     pthread_barrier_wait(barrier);
@@ -700,8 +699,8 @@ float StreamCluster::pFL(Points *points, int *feasible, int numfeasible,
     return(cost);
 }
 
-float StreamCluster::pkmedian(Points *points, long kmin, long kmax, long *kfinal,
-        int pid, pthread_barrier_t *barrier) {
+float UtilClusters::pkmedian(Points *points, long kmin, long kmax, long *kfinal,
+                             int pid, pthread_barrier_t *barrier) {
     int i;
     double cost;
     double lastcost;
@@ -886,7 +885,7 @@ float StreamCluster::pkmedian(Points *points, long kmin, long kmax, long *kfinal
     return cost;
 }
 
-void * StreamCluster::localSearchSub(void *arg_) {
+void *UtilClusters::localSearchSub(void *arg_) {
 
     pkmedian_arg_t *arg = (pkmedian_arg_t *) arg_;
     pkmedian(arg->points, arg->kmin, arg->kmax, arg->kfinal, arg->pid, arg->barrier);
@@ -894,7 +893,7 @@ void * StreamCluster::localSearchSub(void *arg_) {
     return NULL;
 }
 
-void StreamCluster::localSearch(Points * points, long kmin, long kmax, long *kfinal) {
+void UtilClusters::localSearch(Points * points, long kmin, long kmax, long *kfinal) {
 
 #ifdef PROFILE
     double t1 = gettime();
@@ -930,7 +929,7 @@ void StreamCluster::localSearch(Points * points, long kmin, long kmax, long *kfi
     }
 
     delete[] threads;
-    delete[] arg;
+    //delete[] arg;  //(dido)
 #ifdef ENABLE_THREADS
     pthread_barrier_destroy(&barrier);
 #endif
@@ -941,3 +940,56 @@ void StreamCluster::localSearch(Points * points, long kmin, long kmax, long *kfi
 #endif
 }
 
+
+/* compute the means for the k clusters */
+int UtilClusters::contcenters(Points *points)
+{
+    long i, ii;
+    float relweight;
+
+    for (i=0;i<points->num;i++) {
+        /* compute relative weight of this point to the cluster */
+        if (points->p[i].assign != i) {
+            relweight=points->p[points->p[i].assign].weight + points->p[i].weight;
+            relweight = points->p[i].weight/relweight;
+            for (ii=0;ii<points->dim;ii++) {
+                points->p[points->p[i].assign].coord[ii]*=1.0-relweight;
+                points->p[points->p[i].assign].coord[ii]+=
+                        points->p[i].coord[ii]*relweight;
+            }
+            points->p[points->p[i].assign].weight += points->p[i].weight;
+        }
+    }
+
+    return 0;
+}
+
+
+void UtilClusters::mycopycenters(Points *points, Points* centers)//, long* centerIDs, long offset)
+{
+    long i;
+    long k;
+    bool *is_a_median = (bool *) calloc(points->num, sizeof(bool));
+
+    /* mark the centers */
+    for ( i = 0; i < points->num; i++ ) {
+        is_a_median[points->p[i].assign] = 1;
+    }
+
+    k=centers->num;
+
+    /* count how many  */
+    for ( i = 0; i < points->num; i++ ) {
+        if ( is_a_median[i] ) {
+            memcpy( centers->p[k].coord, points->p[i].coord, points->dim * sizeof(float));
+            centers->p[k].weight = points->p[i].weight;
+            centers->p[k].ID = points->p[i].ID;
+            //centerIDs[k] = i + offset;
+            k++;
+        }
+    }
+
+    centers->num = k;
+
+    free(is_a_median);
+}

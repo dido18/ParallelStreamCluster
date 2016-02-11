@@ -32,7 +32,7 @@ struct pkmedian_arg_t {
     pthread_barrier_t *barrier;
 };
 
-class StreamCluster {
+class UtilClusters {
 
     static int PFWORKERS;
     static int nproc;
@@ -72,12 +72,19 @@ class StreamCluster {
    // int dim;
 
 public:
-    StreamCluster(int pf_workers, long kmin, long kmax); //long kMin, long kMax,
+    UtilClusters(int pf_workers, long kmin, long kmax); //long kMin, long kMax,
 
     long findCenters(Points *p);
 
     float pFL(Points *points, int *feasible, int numfeasible, float z, long *k, double cost, long iter, float e, int pid,
               pthread_barrier_t *barrier);
+
+    /* compute the means for the k clusters */
+    int contcenters(Points *points);
+
+    /* copy the centers points in the vector centers*/
+    void mycopycenters(Points *points, Points* centers);
+
 };
 
 

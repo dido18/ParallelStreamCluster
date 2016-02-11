@@ -5,7 +5,6 @@
 #ifndef PARALLELSTREAMCLUSTER_HELPER_H
 #define PARALLELSTREAMCLUSTER_HELPER_H
 
-#include "StreamCluster.h"
 #include "Points.h"
 
 // header
@@ -17,6 +16,8 @@ namespace helper
         StreamClusterEntry(p, kMin, kMax, dim, centersize, kfinal);
         return *kfinal;
     }*/
+
+
 
 }
 
