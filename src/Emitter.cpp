@@ -14,7 +14,7 @@ using namespace ff;
 Emitter::Emitter(PStream *Stream, long cksize, long d, long kmin, long kmax, int pf_workers)  :
         stream(Stream), chunksize(cksize), dim(d), sc(pf_workers, kmin, kmax) { }
 
-Points* Emitter::svc(Points * points) {
+Points* Emitter::svc(Points * p) {
         while (!stream->feof()) {
             float *block = (float *) malloc(chunksize * dim * sizeof(float));
             //float* centerBlock = (float*)malloc(centersize*dim*sizeof(float) );
@@ -53,7 +53,7 @@ Points* Emitter::svc(Points * points) {
 
             IDoffset += numRead;
 
-
+/*
             long k = sc.findCenters(points);//, kmin, kmax,dim);// centersize);
            // points->to_string();
 
@@ -76,9 +76,9 @@ Points* Emitter::svc(Points * points) {
             sc.mycopycenters(points,centers);
             cout<<" finished copy"<<endl;
             centers->to_string();
-
+*/
             ff_send_out(points);
-        }
+       }
 
 
        return EOS;   // the stream is finished

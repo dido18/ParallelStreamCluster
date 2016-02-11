@@ -6,6 +6,7 @@
 #define PARALLELSTREAMCLUSTER_HELPER_H
 
 #include "Points.h"
+#include <sys/time.h>
 
 // header
 namespace helper
@@ -18,7 +19,11 @@ namespace helper
     }*/
 
 
-
+    static double gettime() {
+        struct timeval t;
+        gettimeofday(&t, NULL);
+        return (double) t.tv_sec + t.tv_usec * 1e-6;
+    }
 }
 
 #endif //PARALLELSTREAMCLUSTER_HELPER_H

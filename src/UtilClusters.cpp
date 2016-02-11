@@ -45,9 +45,13 @@ long UtilClusters::findCenters(Points *points) {
     is_center = (bool*)calloc(points->num,sizeof(bool));
     center_table = (int*)malloc(points->num*sizeof(int));
 
-    long *kfinal;
-    localSearch(points, kmin, kmax, kfinal);
-    return *kfinal;
+    long kfinal;
+    localSearch(points, kmin, kmax, &kfinal);
+
+    free(switch_membership);
+    free(is_center);
+    free(center_table);
+    return kfinal;
 }
 
 /* compute Euclidean distance squared between two points */

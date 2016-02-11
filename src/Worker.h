@@ -7,21 +7,24 @@
 
 #include <ff/barrier.hpp>
 #include <ff/node.hpp>
+
 #include "Points.h"
+#include "UtilClusters.h"
 
 using namespace std;
 using namespace ff;
 
-class Worker:ff_node_t<Points> {
+class Worker: public ff_node_t<Points> {
 
 public:
     int dim;
     long kmin;
     long kmax;
     long centersize;
+    UtilClusters sc;
 
 
-    Worker(int d, long kMIN, long kMAX, long centersz );
+    Worker(int d, long kMIN, long kMAX, long centersz, long pf_workers);
 
     Points * svc(Points * p);
 
