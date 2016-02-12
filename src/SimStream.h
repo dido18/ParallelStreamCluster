@@ -6,6 +6,7 @@
 #define PARALLELSTREAMCLUSTER_SIMSTREAM_H
 
 #include <climits>
+#include "Points.h"
 
 class SimStream: public PStream {
     //synthetic stream
@@ -24,6 +25,8 @@ class SimStream: public PStream {
             }
             return count;
         }
+
+
         int ferror() {
             return 0;
         }

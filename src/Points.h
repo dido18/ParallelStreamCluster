@@ -28,8 +28,11 @@ struct Point {
     }
 
     Point() { }
+    Point(int dim){
+        coord = new float[dim];
+    }
 
-    ~Point() { }
+    ~Point() { };
 
     float weight;
     float *coord;  //coord points to an array of dim long
@@ -47,7 +50,6 @@ public:
     int dim;  // dimensionality
 
     std::unique_ptr<Point[]> p;   // the array itself
-   // Point * p;
 
     Points(Points &&) = delete;
 

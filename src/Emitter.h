@@ -22,7 +22,6 @@ public:
     long IDoffset = 0;   // Count the points read from the stream.
     UtilClusters sc;
 
-
     Emitter (PStream * Stream, long cksize, long d, long kmin, long kmax, int pf_workers);
 
     Points *svc (Points *);

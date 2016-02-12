@@ -17,6 +17,7 @@ Emitter::Emitter(PStream *Stream, long cksize, long d, long kmin, long kmax, int
 Points* Emitter::svc(Points * p) {
         while (!stream->feof()) {
             float *block = (float *) malloc(chunksize * dim * sizeof(float));
+
             //float* centerBlock = (float*)malloc(centersize*dim*sizeof(float) );
             //long* centerIDs = (long*)malloc(centersize*dim*sizeof(long));
 
@@ -25,7 +26,8 @@ Points* Emitter::svc(Points * p) {
                 exit(1);
             }
 
-///            unique_ptr<Points> points(new Points(dim, chunksize));
+///         unique_ptr<Points> points(new Points(dim, chunksize));
+           // Points * points = new Points(dim, chunksize);
             Points * points = new Points(dim, chunksize);
 
             for (int i = 0; i < chunksize; i++) {
@@ -33,6 +35,7 @@ Points* Emitter::svc(Points * p) {
             }
 
             size_t numRead = stream->read(block, dim, chunksize);
+
 
             /*if (numRead == 0) {
                 ff_send_out(EOS);
@@ -52,31 +55,7 @@ Points* Emitter::svc(Points * p) {
             }
 
             IDoffset += numRead;
-
-/*
-            long k = sc.findCenters(points);//, kmin, kmax,dim);// centersize);
-           // points->to_string();
-
-            cout<<" found "<<k<< " centers"<<endl;
-
-            sc.contcenters(points);
-            cout<<" finished cont "<<endl;
-
-            Points * centers = new Points(dim, chunksize);
-            centers->num = 0; // must be setted to zero initially
-
-            float* centerBlock = (float*)malloc(chunksize*dim*sizeof(float) );
-
-            for( int i = 0; i< chunksize; i++ ) {
-                centers->p[i].coord = &centerBlock[i*dim];
-                centers->p[i].weight = 1.0;
-            }
-
-
-            sc.mycopycenters(points,centers);
-            cout<<" finished copy"<<endl;
-            centers->to_string();
-*/
+            cout<<" Emitter has sent the points";
             ff_send_out(points);
        }
 

@@ -35,6 +35,8 @@ Points* Worker::svc(Points *points) {
     sc.mycopycenters(points,centers);
     cout<<" finished copy"<<endl;
 
+    //delete points;
+
     centers->to_string();
 
 

@@ -18,10 +18,12 @@
 #define PROFILE // comment this out to disable instrumentation code
 //#define ENABLE_THREADS  // comment this out to disable threads
 //#define INSERT_WASTE //uncomment this to insert waste computation into dist function
+//#define FASTFLOW
 
 #define CACHE_LINE 512 // cache line in byte
 
 //int PFGRAIN = 0;
+int UtilClusters::PFGRAIN = 0;
 int UtilClusters::PFWORKERS = 1;
 int UtilClusters::nproc = 1;
 
@@ -136,11 +138,17 @@ float UtilClusters::pspeedy(Points *points, float z, long *kcenter, int pid, pth
     long k2 = k1 + bsize;
     if( pid == nproc-1 ) k2 = points->num;
 
-    static double totalcost;
+ /*   static double totalcost;
 
     static bool open = false;
     static double* costs; //cost for each thread.
     static int i;
+*/
+     double totalcost;
+
+     bool open = false;
+     double* costs; //cost for each thread.
+     int i;
 
 #ifdef ENABLE_THREADS
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -363,10 +371,13 @@ double UtilClusters::pgain(long x, Points *points, double z, long int *numcenter
 
     int i;
     int number_of_centers_to_close = 0;
-
-    static double *work_mem;
-    static double gl_cost_of_opening_x;
-    static int gl_number_of_centers_to_close;
+    //(dido) static cause problem
+    //static double *work_mem;
+    double  * work_mem;
+   // static double gl_cost_of_opening_x;
+    double gl_cost_of_opening_x;
+    //static int gl_number_of_centers_to_close;
+    int gl_number_of_centers_to_close;
 
     //each thread takes a block of working_mem.
     int stride = *numcenters + 2;
@@ -710,10 +721,15 @@ float UtilClusters::pkmedian(Points *points, long kmin, long kmax, long *kfinal,
     double lastcost;
     double hiz, loz, z;
 
-    static long k;
-    static int *feasible;
-    static int numfeasible;
-    static double *hizs;
+    //static long k;
+    //static int *feasible;
+    //static int numfeasible;
+    //static double *hizs;
+    long k;
+    int *feasible;
+    int numfeasible;
+    double *hizs;
+
 
     if (pid == 0) hizs = (double *) calloc(nproc, sizeof(double));
     hiz = loz = 0.0;

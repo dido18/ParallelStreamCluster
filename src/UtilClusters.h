@@ -34,6 +34,7 @@ struct pkmedian_arg_t {
 
 class UtilClusters {
 
+    static int PFGRAIN;
     static int PFWORKERS;
     static int nproc;
 
@@ -73,6 +74,8 @@ class UtilClusters {
 
 public:
     UtilClusters(int pf_workers, long kmin, long kmax); //long kMin, long kMax,
+    //~UtilClusters() = delete;
+
 
     long findCenters(Points *p);
 

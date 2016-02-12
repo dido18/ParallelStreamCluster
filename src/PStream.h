@@ -8,7 +8,7 @@
 #define PARALLELSTREAMCLUSTER_STREAM_H
 
 #include <glob.h>
-
+#include "Points.h"
 class PStream {
 public:
     virtual size_t read( float* dest, int dim, int num ) = 0;
