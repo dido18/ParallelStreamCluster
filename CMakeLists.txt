@@ -20,4 +20,5 @@ set(SOURCE_FILES
         src/Helper.h src/Collector.cpp src/Collector.h)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+
 add_executable(ParallelStreamCluster ${SOURCE_FILES})
