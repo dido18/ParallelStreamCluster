@@ -15,7 +15,7 @@ Emitter::Emitter(PStream *Stream, long cksize, long d, long kmin, long kmax, int
         stream(Stream), chunksize(cksize), dim(d), sc(pf_workers, kmin, kmax) { }
 
 Points* Emitter::svc(Points * p) {
-        while (!stream->feof()) {
+        while (1) {
             float *block = (float *) malloc(chunksize * dim * sizeof(float));
 
             //float* centerBlock = (float*)malloc(centersize*dim*sizeof(float) );
@@ -27,8 +27,7 @@ Points* Emitter::svc(Points * p) {
             }
 
 ///         unique_ptr<Points> points(new Points(dim, chunksize));
-           // Points * points = new Points(dim, chunksize);
-            Points * points = new Points(dim, chunksize);
+            Points *points = new Points(dim, chunksize);
 
             for (int i = 0; i < chunksize; i++) {
                 (points->p[i]).coord = &block[i * dim];  // points contains pointer to the block array containting the coordinates
@@ -45,7 +44,7 @@ Points* Emitter::svc(Points * p) {
 
             if (stream->ferror() || numRead < (unsigned int) chunksize && !stream->feof()) {
                 fprintf(stderr, "error reading data!\n");
-                break; //can be EOS ??
+                break;
             }
 
             points->num = numRead;
@@ -55,8 +54,11 @@ Points* Emitter::svc(Points * p) {
             }
 
             IDoffset += numRead;
-            cout<<" Emitter has sent the points";
+
             ff_send_out(points);
+            if (stream->feof()) {
+                    break;
+            }
        }
 
 

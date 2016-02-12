@@ -18,13 +18,13 @@
 #define PROFILE // comment this out to disable instrumentation code
 //#define ENABLE_THREADS  // comment this out to disable threads
 //#define INSERT_WASTE //uncomment this to insert waste computation into dist function
-//#define FASTFLOW
+#define FASTFLOW
 
 #define CACHE_LINE 512 // cache line in byte
 
 //int PFGRAIN = 0;
 int UtilClusters::PFGRAIN = 0;
-int UtilClusters::PFWORKERS = 1;
+//int UtilClusters::PFWORKERS = 1;
 int UtilClusters::nproc = 1;
 
 // instrumentation code
@@ -463,7 +463,7 @@ double UtilClusters::pgain(long x, Points *points, double z, long int *numcenter
 
 //	#pragma omp parallel for reduction(+: cost_of_opening_x)
 
-#ifdef FASTFLOW   //fast flow arallel_for_reduce
+#ifdef FASTFLOW   //fastflow parallel_for_reduce
     //  for ( i = k1; i < k2; i++ ) {
       auto reduceF = [](double & var, const double & elem){
         var += elem;  //sum of partial cost_of_opening x
@@ -492,7 +492,7 @@ double UtilClusters::pgain(long x, Points *points, double z, long int *numcenter
       };
 
       //
-      pfr.parallel_reduce(cost_of_opening_x, 0.0 , k1, k2, 1, PFGRAIN, bodyF, reduceF,PFWORKERS);
+      pfr.parallel_reduce(cost_of_opening_x, 0.0 , k1, k2, 1, PFGRAIN, bodyF, reduceF, pfWorkers);
 
 #else // ORIGIANL COMPUTATION
     for (i = k1; i < k2; i++) {
@@ -604,7 +604,7 @@ double UtilClusters::pgain(long x, Points *points, double z, long int *numcenter
                           dist(points->p[i], points->p[x], points->dim);
                         points->p[i].assign = x;
                       }
-        },PFWORKERS); // using all the PFWORKERS
+        }, pfWorkers); // using all the PFWORKERS
 
 #else //original computation
 
@@ -949,7 +949,7 @@ void UtilClusters::localSearch(Points * points, long kmin, long kmax, long *kfin
     }
 
     delete[] threads;
-    //delete[] arg;  //(dido)
+    delete[] arg;  //(dido)
 #ifdef ENABLE_THREADS
     pthread_barrier_destroy(&barrier);
 #endif
@@ -1012,4 +1012,18 @@ void UtilClusters::mycopycenters(Points *points, Points* centers)//, long* cente
     centers->num = k;
 
     free(is_a_median);
+}
+
+void  UtilClusters::printInfoTime() {
+#ifdef PROFILE
+    printf("time pgain = %lf\n", time_gain);
+    printf("time pgain_dist = %lf\n", time_gain_dist);
+    printf("time pgain_init = %lf\n", time_gain_init);
+    printf("time pselect = %lf\n", time_select_feasible);
+    printf("time pspeedy = %lf\n", time_speedy);
+    printf("time pshuffle = %lf\n", time_shuffle);
+    printf("time localSearch = %lf\n", time_local_search);
+#endif
+
+
 }

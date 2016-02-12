@@ -12,33 +12,33 @@ Worker::Worker(int d, long kMIN, long kMAX, long centersz, long pf_workers):
 
 Points* Worker::svc(Points *points) {
 
-    cout<<"Worker:  "<<get_my_id()<< " received the points" << endl;
+    cout<<"Worker "<<get_my_id()<< ": received the points" << endl;
 
-    long k = sc.findCenters(points);//, kmin, kmax,dim);// centersize);
-    // points->to_string();
+    long k = sc.findCenters(points);
 
-    cout<<" found "<<k<< " centers"<<endl;
+    cout<<"Worker "<<get_my_id()<<": found "<<k<< " centers"<<endl;
 
     sc.contcenters(points);
-    cout<<" finished cont "<<endl;
+
+    cout<<"Worker "<<get_my_id()<<": finished cont "<<endl;
 
     Points * centers = new Points(dim, centersize);
-    centers->num = 0; // must be setted to zero initially
+    //centers->num = 0; // must be setted to zero initially
 
-    float* centerBlock = (float*)malloc(centersize*dim*sizeof(float) );
+    float* centerBlock = (float*)malloc(centersize*dim*sizeof(float));
 
     for( int i = 0; i< centersize; i++ ) {
         centers->p[i].coord = &centerBlock[i*dim];
-   centers->p[i].weight = 1.0;
+        centers->p[i].weight = 1.0;
     }
 
     sc.mycopycenters(points,centers);
-    cout<<" finished copy"<<endl;
 
-    //delete points;
+    cout<<"Worker "<<get_my_id()<<": finished copy"<<endl;
 
-    centers->to_string();
+    delete points;
 
+    ff_send_out(centers);
 
     return GO_ON;
 }

@@ -58,6 +58,9 @@ class UtilClusters {
 
     void localSearch(Points *points, long kmin, long kmax, long *kfinal);
 
+    float pFL(Points *points, int *feasible, int numfeasible, float z, long *k, double cost, long iter, float e, int pid,
+              pthread_barrier_t *barrier);
+
     ParallelFor pf;
     ParallelForReduce<double> pfr;
 
@@ -79,14 +82,16 @@ public:
 
     long findCenters(Points *p);
 
-    float pFL(Points *points, int *feasible, int numfeasible, float z, long *k, double cost, long iter, float e, int pid,
-              pthread_barrier_t *barrier);
+
 
     /* compute the means for the k clusters */
     int contcenters(Points *points);
 
     /* copy the centers points in the vector centers*/
     void mycopycenters(Points *points, Points* centers);
+
+    /* prints the time spent in the various functions*/
+    void printInfoTime();
 
 };
 

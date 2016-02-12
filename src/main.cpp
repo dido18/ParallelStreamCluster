@@ -15,6 +15,7 @@
 #include "Helper.h"
 #include "Emitter.h"
 #include "Worker.h"
+#include "Collector.h"
 
 //fastflow
 #include <ff/farm.hpp>
@@ -75,6 +76,7 @@ int main(int argc, char **argv) {
 
 
     srand48(SEED);
+
     PStream* stream;
     if( n > 0 ) {
         stream = new SimStream(n);
@@ -86,19 +88,16 @@ int main(int argc, char **argv) {
     // emitter produces the stream of chuncksize points
     Emitter *emitter = new Emitter(stream, chunksize, dim, kmin, kmax, PFWORKERS);
 
+    //collector
+    Collector * collector = new Collector(clustersize,dim, kmin, kmax, PFWORKERS);
 
-   // if(emitter.run_and_wait_end() <0)
-    //    error ("running emitter");
 
-        std::vector<ff_node *> Workers;
-        for(int i =0; i < FARM_WORKERS; ++i ) {//(int d, long kMIN, long kMAX, long centersz, long pf_workers)
+    std::vector<ff_node *> Workers;
+    for(int i =0; i < FARM_WORKERS; ++i ) {//(int d, long kMIN, long kMAX, long centersz, long pf_workers)
             Workers.push_back(new Worker(dim,kmin,kmax,clustersize,PFWORKERS));
-        }
-       ff_farm<> myFarm(Workers,emitter);
+    }
+    ff_farm<> myFarm(Workers,emitter,collector);
 
-        if(myFarm.run_and_wait_end()<0){
-            error("running farm");
-        }
 
 /*
     // workers finds the  medians in the stream received.
@@ -112,13 +111,13 @@ int main(int argc, char **argv) {
     // Fastflow Farm declaration
     ff_Farm<Points> myFarm (move(Workers));//std::move(Workers), emitter);
     myFarm.remove_collector(); // remove the default collector
-*/
+
     //Collector
     //lastStage Collector(dim,kmin,kmax,outfilename,clustersize);//long kMIN, long kMAX, char* out, long clustersz);
 
     //Pipe of farm and my collector
     //ff_Pipe<Points> myPipe(myFarm, Collector);
-/*
+*/
     double t1 = gettime();
     if (myFarm.run_and_wait_end()<0) {
         error("running Pipe\n");
@@ -128,7 +127,7 @@ int main(int argc, char **argv) {
 
 
     printf("time = %lf\n",t2-t1);
-*/
+
 
     delete stream;
 

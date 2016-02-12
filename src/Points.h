@@ -65,8 +65,8 @@ public:
 
     void to_string() {
         for (int i = 0; i < num; ++i) {
-            cout << p[i].ID << endl;
-            cout << p[i].weight << endl;
+            cout <<"ID: "<< p[i].ID << endl;
+            cout <<"weight: "<< p[i].weight << endl;
             for (int k = 0; k < dim; ++k) {
                 cout << p[i].coord[k] << " ";
             }

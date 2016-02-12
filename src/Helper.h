@@ -24,6 +24,7 @@ namespace helper
         gettimeofday(&t, NULL);
         return (double) t.tv_sec + t.tv_usec * 1e-6;
     }
+
 }
 
 #endif //PARALLELSTREAMCLUSTER_HELPER_H
