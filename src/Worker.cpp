@@ -12,18 +12,20 @@ Worker::Worker(int d, long kMIN, long kMAX, long centersz, long pf_workers):
 
 Points* Worker::svc(Points *points) {
 
-    cout<<"Worker "<<get_my_id()<< ": received the points" << endl;
+    cout<<"Worker "<<get_my_id()<< ": received " << points->num <<"  points" << endl <<flush;
 
     long k = sc.findCenters(points);
 
-    cout<<"Worker "<<get_my_id()<<": found "<<k<< " centers"<<endl;
-
+#ifdef PRINTINFO
+    cout<<"Worker " <<get_my_id()<<": finish local search"<<endl;
+#endif
     sc.contcenters(points);
 
+#ifdef PRINTINFO
     cout<<"Worker "<<get_my_id()<<": finished cont "<<endl;
+#endif
 
     Points * centers = new Points(dim, centersize);
-    //centers->num = 0; // must be setted to zero initially
 
     float* centerBlock = (float*)malloc(centersize*dim*sizeof(float));
 
@@ -32,13 +34,14 @@ Points* Worker::svc(Points *points) {
         centers->p[i].weight = 1.0;
     }
 
-    sc.mycopycenters(points,centers);
+    sc.mycopycenters(points, centers);
 
-    cout<<"Worker "<<get_my_id()<<": finished copy"<<endl;
-
-    delete points;
+#ifdef PRINTINFO
+    cout<<"Worker "<<get_my_id()<<": finish copy centers"<<endl;
+#endif
 
     ff_send_out(centers);
+    delete points;
 
     return GO_ON;
 }

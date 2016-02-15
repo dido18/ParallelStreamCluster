@@ -4,9 +4,9 @@
 #
 mkdir -p run
 
-USAGE="usage: $0 [ffmap | fffarmmap | parsec | rodinia] [test| simsmall| simlarge| native] [farmWorkers pfWorkers | noThreas] "
+USAGE="usage: $0 [ffmap | fffarmmap | parsec | rodinia] [test| simsmall| simlarge| native] [farmWorkers pfWorkers | noThreas] nTimes "
 
-if [ $# -lt 3 ];
+if [ $# -lt 4 ];
    then
    echo ${USAGE}
    exit 1
@@ -25,15 +25,31 @@ RUN_ARGS=$run_args    #run_args contains the arguments for the programm
 
 case "$1" in
         "ffmap" |  "fffarmmap")
-        	echo "Running ${1} test of ${BINARY_PATH} with ${3} farmWorker and ${4} mapWorkers ..."
-         	${BINARY_PATH} ${RUN_ARGS} ${OUTPUT_PATH} ${3}  ${4}    # run the ffmap or fffarmmapp with farmWorkers and mapWorkers
+        	echo "Running ${1} test of ${BINARY_PATH} with ${3} farmWorker and ${4} mapWorkers ${5} times..."
+		     for i in `seq 1 $5`;
+		     do
+		           ${BINARY_PATH} ${RUN_ARGS} ${OUTPUT_PATH} ${3}  ${4}
+             done
+
             ;;
+        "ffmap")
+            echo "Running ${1} test of ${BINARY_PATH} with ${3}  mapWorkers ${4} times..."
+        	for i in `seq 1 $5`;
+        	    do
+        	          ${BINARY_PATH} ${RUN_ARGS} ${OUTPUT_PATH} ${3}  ${4}
+               done
+        ;;
         "parsec" | "rodinia")
-		echo "Running ${1} test of ${BINARY_PATH} with ${3} threads ..."
-		${BINARY_PATH} ${RUN_ARGS} ${OUTPUT_PATH} ${3}    # run rodinia or parsec with nthreads
+		echo "Running ${1} test of ${BINARY_PATH} with ${3} threads ${4} times ..."
+		 for i in `seq 1 $5`;
+        	do
+        	   ${BINARY_PATH} ${RUN_ARGS} ${OUTPUT_PATH} ${4}    # run rodinia or parsec with nthreads
+            done
+
             ;;
         *)
-           echo ${USAGE}
+            echo ${USAGE}
             exit 1
  
 esac
+

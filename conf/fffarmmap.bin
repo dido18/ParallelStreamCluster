@@ -2,4 +2,4 @@
 
 BIN_DIR="."
 
-run_exec="${BIN_DIR}/bin/ParallelStreamCluster"
+run_exec="${BIN_DIR}/bin/ff_streamcluster"

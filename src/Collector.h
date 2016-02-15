@@ -17,14 +17,15 @@ public:
     long clustersize;
     Points * finalCenters;
     float* centerBlock ;
+    char * outFile;
 
-    Collector(long clustersz, int dim, long kmin, long kmax, int pf_workers):
-            clustersize{clustersz}, finalCenters(new Points(dim, clustersz)), sc(pf_workers, kmin, kmax){
+    Collector(long clustersz, int dim, long kmin, long kmax, int pf_workers, char *out):
+            clustersize{clustersz}, finalCenters(new Points(dim, clustersz)), sc(pf_workers, kmin, kmax), outFile(out){
 
             centerBlock = (float*)malloc(clustersize*dim*sizeof(float));
 
-             for (int i = 0; i < clustersz; i++) {
-                (finalCenters->p[i]).coord = &centerBlock[i * dim];// points contains pointer to the block array containting the coordinates
+             for (int i=0; i < clustersize; ++i) {
+                (finalCenters->p[i]).coord = &centerBlock[i* dim];// points contains pointer to the block array containting the coordinates
                  finalCenters->p[i].weight = 1.0;
              }
 
@@ -34,7 +35,6 @@ public:
     void svc_end();
 private :
     UtilClusters sc;
-
 
 
 

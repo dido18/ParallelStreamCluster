@@ -77,12 +77,10 @@ class UtilClusters {
 
 public:
     UtilClusters(int pf_workers, long kmin, long kmax); //long kMin, long kMax,
-    //~UtilClusters() = delete;
+    ~UtilClusters() {};
 
 
     long findCenters(Points *p);
-
-
 
     /* compute the means for the k clusters */
     int contcenters(Points *points);
@@ -93,6 +91,9 @@ public:
     /* prints the time spent in the various functions*/
     void printInfoTime();
 
+
+    /* write  the centers in a file */
+    void myOutcenterIDs( Points* centers, char* outfile );//long* centerIDs,
 };
 
 

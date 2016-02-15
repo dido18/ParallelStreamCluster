@@ -49,7 +49,8 @@ public:
     long num; // number of points; may not be N if this is a sample
     int dim;  // dimensionality
 
-    std::unique_ptr<Point[]> p;   // the array itself
+   // std::unique_ptr<Point[]> p;   // the array itself
+    Point * p;
 
     Points(Points &&) = delete;
 
@@ -60,6 +61,8 @@ public:
     Points &operator=(const Points &) = delete;
 
     Points(int d, long n) : num{0}, dim{d}, p(new Point[n]) { } // num = 0 initally there are 0 point
+
+    void addNumberPoints( long n){ num += n; }
 
     ~Points() { };
 

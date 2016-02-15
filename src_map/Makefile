@@ -7,7 +7,7 @@ FF_ROOT		= ~/fastflow
 
 
 # prefix of the project directory
-#PREFIX          = /home/dido-ubuntu/github/ParallelStreamCluster
+#PREFIX        = /home/dido-ubuntu/github/ParallelStreamCluster
 
 #
 CXX		= g++ -std=c++11
@@ -19,7 +19,7 @@ LDFLAGS 	= -pthread
 
 OPTFLAGS	= -O3        #-DPRINTINFO  # -finline-functions -DNDEBUG  #-DPRINTINFO
 
-TARGETS		=  main
+TARGETS		=  ff_streamcluster_map
 
 
 .PHONY: all clean cleanall #install

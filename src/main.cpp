@@ -11,22 +11,14 @@
 #include "PStream.h"
 #include "SimStream.h"
 #include "FileStream.h"
-#include "Points.h"
 #include "Helper.h"
 #include "Emitter.h"
 #include "Worker.h"
 #include "Collector.h"
 
-//fastflow
-#include <ff/farm.hpp>
-
 #define MAXNAMESIZE 1024 // max filename length
 #define SEED 1
 
-//int  FARM_WORKERS ; // number of workers in the farm
-//int  PFWORKERS = 1 ;   // parallel_for parallelism degree
-
-int  PFGRAIN = 1 ;     // dafualt static scheduling of iterations
 
 using namespace ff;
 using namespace std;
@@ -68,12 +60,8 @@ int main(int argc, char **argv) {
     strcpy(infilename, argv[7]);
     strcpy(outfilename, argv[8]);
 
-    int FARM_WORKERS = atoi(argv[9]);
-    long PFWORKERS =  atoi(argv[10]);
-
-    PFGRAIN = 0;
-    //nproc = 1; // must be present in the original file implementation
-
+    int farmWorkers = atoi(argv[9]);
+    long pfWorkers =  atoi(argv[10]);
 
     srand48(SEED);
 
@@ -86,38 +74,46 @@ int main(int argc, char **argv) {
     }
 
     // emitter produces the stream of chuncksize points
-    Emitter *emitter = new Emitter(stream, chunksize, dim, kmin, kmax, PFWORKERS);
+    Emitter *emitter = new Emitter(stream, chunksize, dim, kmin, kmax, pfWorkers);
 
     //collector
-    Collector * collector = new Collector(clustersize,dim, kmin, kmax, PFWORKERS);
+    Collector * collector = new Collector(clustersize, dim, kmin, kmax, pfWorkers,outfilename);
 
-
+    //farm
     std::vector<ff_node *> Workers;
-    for(int i =0; i < FARM_WORKERS; ++i ) {//(int d, long kMIN, long kMAX, long centersz, long pf_workers)
-            Workers.push_back(new Worker(dim,kmin,kmax,clustersize,PFWORKERS));
+    for(int i =0; i < farmWorkers; ++i ) {
+            Workers.push_back(new Worker(dim,kmin,kmax,clustersize,pfWorkers)); //pass olso PFGRAIN ??
     }
     ff_farm<> myFarm(Workers,emitter,collector);
 
-
+    /*
+    vector<unique_ptr<ff_node>> Workers;
+    ff_Farm<> myFarm ([&](){
+        for(int i=0; i < farmWorkers; ++i){
+            Workers.push_back(unique_ptr<Worker>(new Worker(dim, kmin, kmax, clustersize, pfWorkers)));
+        }
+        return Workers;
+    }());
+*/
 /*
     // workers finds the  medians in the stream received.
     vector<unique_ptr<ff_node>> Workers;
 
-    for(int i=0; i<FARM_WORKERS; ++i){
-        Workers.push_back(unique_ptr<Worker>(new Worker(dim, kmin, kmax, clustersize,PFWORKERS));
+    for(int i=0; i < farmWorkers; ++i){
+        Workers.push_back(unique_ptr<Worker>(new Worker(dim, kmin, kmax, clustersize, pfWorkers));
         //(int d, long kMIN, long kMAX, long centersz )
     }
 
     // Fastflow Farm declaration
-    ff_Farm<Points> myFarm (move(Workers));//std::move(Workers), emitter);
+    ff_Farm<Points> myFarm(std::move(Workers));//std::move(Workers), emitter);
     myFarm.remove_collector(); // remove the default collector
-
+*/
     //Collector
     //lastStage Collector(dim,kmin,kmax,outfilename,clustersize);//long kMIN, long kMAX, char* out, long clustersz);
 
     //Pipe of farm and my collector
     //ff_Pipe<Points> myPipe(myFarm, Collector);
-*/
+
     double t1 = gettime();
     if (myFarm.run_and_wait_end()<0) {
         error("running Pipe\n");
@@ -125,9 +121,18 @@ int main(int argc, char **argv) {
     }
     double t2 = gettime();
 
+    double time = t2-t1;
 
-    printf("time = %lf\n",t2-t1);
 
+    cout<< "time = " << time<< endl;
+
+    ofstream myfile ("results.txt", ios_base::app);
+
+    if (myfile.is_open())
+    {
+        myfile << time << endl;
+        myfile.close();
+    }
 
     delete stream;
 

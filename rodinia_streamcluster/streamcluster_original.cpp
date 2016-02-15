@@ -54,7 +54,7 @@ using namespace std;
 /* higher ITER also scales the running time almost linearly */
 #define ITER 3 // iterate ITER* k log k times; ITER >= 1
 
-//#define PRINTINFO //comment this out to disable output
+#define PRINTINFO //comment this out to disable output
 #define PROFILE // comment this out to disable instrumentation code
 //#define ENABLE_THREADS  // comment this out to disable threads
 //#define INSERT_WASTE //uncomment this to insert waste computation into dist function
@@ -1035,7 +1035,7 @@ public:
     size_t count = 0;
     for( int i = 0; i < num && n > 0; i++ ) {
       for( int k = 0; k < dim; k++ ) {
-	dest[i*dim + k] = lrand48()/(float)INT_MAX;
+        dest[i*dim + k] = lrand48()/(float)INT_MAX;
       }
       n--;
       count++;
@@ -1177,6 +1177,7 @@ void streamCluster( PStream* stream,
     printf("finish copy centers\n");
 #endif
 
+
     free(is_center);
     free(switch_membership);
     free(center_table);
@@ -1191,9 +1192,9 @@ void streamCluster( PStream* stream,
   is_center = (bool*)calloc(centers.num,sizeof(bool));
   center_table = (int*)malloc(centers.num*sizeof(int));
 
-  localSearch( &centers, kmin, kmax ,&kfinal );
+  localSearch(&centers, kmin, kmax ,&kfinal );
   contcenters(&centers);
-  outcenterIDs( &centers, centerIDs, outfile);
+  outcenterIDs(&centers, centerIDs, outfile);
 }
 
 int main(int argc, char **argv)

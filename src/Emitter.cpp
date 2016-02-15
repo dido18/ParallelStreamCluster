@@ -3,10 +3,7 @@
 //
 
 #include "Emitter.h"
-//#include <memory>
 
-//#include "HelperStreamCluster.h"
-#include "Helper.h"
 
 using namespace std;
 using namespace ff;
@@ -17,9 +14,6 @@ Emitter::Emitter(PStream *Stream, long cksize, long d, long kmin, long kmax, int
 Points* Emitter::svc(Points * p) {
         while (1) {
             float *block = (float *) malloc(chunksize * dim * sizeof(float));
-
-            //float* centerBlock = (float*)malloc(centersize*dim*sizeof(float) );
-            //long* centerIDs = (long*)malloc(centersize*dim*sizeof(long));
 
             if (block == NULL) {
                 fprintf(stderr, "not enough memory for a chunk!\n");
@@ -35,12 +29,7 @@ Points* Emitter::svc(Points * p) {
 
             size_t numRead = stream->read(block, dim, chunksize);
 
-
-            /*if (numRead == 0) {
-                ff_send_out(EOS);
-            }*/
-
-            cout << "Emitter reads  " << numRead << " points" << endl;
+            cout << "Emitter reads  " << numRead << " points"  << endl <<flush;
 
             if (stream->ferror() || numRead < (unsigned int) chunksize && !stream->feof()) {
                 fprintf(stderr, "error reading data!\n");
@@ -52,6 +41,7 @@ Points* Emitter::svc(Points * p) {
                 points->p[i].weight = 1.0;
                 points->p[i].ID = IDoffset + i;
             }
+
 
             IDoffset += numRead;
 
@@ -65,7 +55,3 @@ Points* Emitter::svc(Points * p) {
        return EOS;   // the stream is finished
 };
 
-int Emitter::run_and_wait_end(bool b){
-    if(ff_node_t::run()<0) return -1;
-    return ff_node_t::wait();
-}

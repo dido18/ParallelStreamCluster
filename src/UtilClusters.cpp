@@ -725,7 +725,7 @@ float UtilClusters::pkmedian(Points *points, long kmin, long kmax, long *kfinal,
     //static int *feasible;
     //static int numfeasible;
     //static double *hizs;
-    long k;
+    long k ;//dido
     int *feasible;
     int numfeasible;
     double *hizs;
@@ -1026,4 +1026,32 @@ void  UtilClusters::printInfoTime() {
 #endif
 
 
+}
+
+
+void UtilClusters::myOutcenterIDs( Points* centers,  char* outfile ) { //long* centerIDs,
+    FILE* fp = fopen(outfile, "w");
+    if( fp==NULL ) {
+        fprintf(stderr, "error opening %s\n",outfile);
+        exit(1);
+    }
+    int* is_a_median = (int*)calloc( sizeof(int), centers->num );
+    for( int i =0 ; i< centers->num; i++ ) {
+        is_a_median[centers->p[i].assign] = 1;
+    }
+
+    for( int i = 0; i < centers->num; i++ ) {
+        if( is_a_median[i] ) {
+            fprintf(fp, "%lu\n", centers->p[i].ID );
+            //cout << centers->p[i].ID<< endl;
+            fprintf(fp, "%lf\n", centers->p[i].weight);
+           // cout<< centers->p[i].weight<<endl;
+            for( int k = 0; k < centers->dim; k++ ) {
+                fprintf(fp, "%lf ", centers->p[i].coord[k]);
+                //cout<< centers->p[i].coord[k]<< " ";
+            }
+            fprintf(fp,"\n\n");
+       }
+    }
+    fclose(fp);
 }

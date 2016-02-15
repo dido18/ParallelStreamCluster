@@ -2011,6 +2011,17 @@ void streamCluster( PStream* stream,
       points.p[i].weight = 1.0;
     }
 
+    // dido
+    cout<<"CHUNK points" <<endl;
+    for (int i = 0; i < points.num; ++i) {
+      // cout <<"ID: "<< centers.p[i].ID << endl;
+      cout <<"weight: "<< points.p[i].weight << endl;
+      for (int k = 0; k < dim; ++k) {
+        cout << points.p[i].coord[k] << " ";
+      }
+      cout << endl << endl;
+    }
+    //end dido
 #ifdef TBB_VERSION
     switch_membership = (bool*)memoryBool.allocate(points.num*sizeof(bool), NULL);
     is_center = (bool*)calloc(points.num,sizeof(bool));
@@ -2037,6 +2048,18 @@ void streamCluster( PStream* stream,
 
     copycenters(&points, &centers, centerIDs, IDoffset); /* sequential */
     IDoffset += numRead;
+
+    // dido
+    cout<<"INTERMEDIATE centers:" <<endl;
+    for (int i = 0; i < centers.num; ++i) {
+     // cout <<"ID: "<< centers.p[i].ID << endl;
+      cout <<"weight: "<< centers.p[i].weight << endl;
+      for (int k = 0; k < dim; ++k) {
+        cout << centers.p[i].coord[k] << " ";
+      }
+      cout << endl << endl;
+    }
+    //end dido
 
 #ifdef TBB_VERSION
     memoryBool.deallocate(switch_membership, sizeof(bool));
