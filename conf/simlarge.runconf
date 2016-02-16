@@ -14,7 +14,8 @@
 
 
 # Arguments to use
-#run_args="10 20 128 16384 16384 1000 none "
+run_args="10 20 128 16384 16384 1000 none "
 
-run_args="10 20 128 16384 1024  1000 none "
+#stream vesrion (16 chunks of 1024 points)
+#run_args="10 20 128 16384 1024  1000 none "
 

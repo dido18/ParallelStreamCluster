@@ -6,7 +6,7 @@ run/
 build/
 
 
-!report/graphix/
+!report/report_latex/graphix/
 report/
 .idea
 

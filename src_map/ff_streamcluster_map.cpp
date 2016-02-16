@@ -38,7 +38,7 @@ using namespace ff;
 #define ITER 3 // iterate ITER* k log k times; ITER >= 1
 
 //#define PRINTINFO //comment this out to disable output
-//#define PROFILE // comment this out to disable instrumentation code
+#define PROFILE // comment this out to disable instrumentation code
 //#define ENABLE_THREADS  // comment this out to disable threads
 //#define INSERT_WASTE //uncomment this to insert waste computation into dist function
 
@@ -50,8 +50,8 @@ int  PFGRAIN = 0;     //dafualt static scheduling of iterations
 #define CACHE_LINE 512 // cache line in byte
 
 #ifdef FASTFLOW
-ParallelFor pf;
-ParallelForReduce<double> pfr;
+    ParallelFor pf;
+    ParallelForReduce<double> pfr;
 #endif
 
 /* this structure represents a point */
@@ -81,13 +81,17 @@ static int ompthreads;
 
 // instrumentation code
 #ifdef PROFILE
-double time_local_search;
-double time_speedy;
-double time_select_feasible;
-double time_gain;
-double time_shuffle;
-double time_gain_dist;
-double time_gain_init;
+    double arrival_time;
+    double service_time;
+    double time_local_search;
+    double time_speedy;
+    double time_select_feasible;
+    double time_gain;
+    double time_shuffle;
+    double time_gain_dist;
+    double time_gain_init;
+    double count_arrivals=0; //count the number of chunksize arrival;
+    double count_services =0; //cont the number of arrival times evaluated
 #endif
 
 //dido
@@ -1223,10 +1227,14 @@ void streamCluster( PStream* stream,
         centers.p[i].weight = 1.0;
     }
 
+
     long IDoffset = 0;
     long kfinal;
     while(1) {
 
+#ifdef PROFILE
+        double t0 = gettime();
+#endif
         size_t numRead  = stream->read(block, dim, chunksize );
         fprintf(stderr,"read %d points\n",numRead);
 
@@ -1240,11 +1248,17 @@ void streamCluster( PStream* stream,
             points.p[i].weight = 1.0;
         }
         //dido
-      //  printPoints(points);
+        //  printPoints(points);
 
         switch_membership = (bool*)malloc(points.num*sizeof(bool));
         is_center = (bool*)calloc(points.num,sizeof(bool));
         center_table = (int*)malloc(points.num*sizeof(int));
+
+#ifdef PROFILE
+        arrival_time += gettime()-t0;
+        count_arrivals++;
+        double t1 = gettime();
+#endif
 
         localSearch(&points,kmin, kmax,&kfinal);
 
@@ -1267,6 +1281,10 @@ void streamCluster( PStream* stream,
         printf("finish copy centers\n");
 #endif
 
+#ifdef PROFILE
+        service_time += gettime()-t1;
+        count_services++;
+#endif
         free(is_center);
         free(switch_membership);
         free(center_table);
@@ -1374,6 +1392,8 @@ int main(int argc, char **argv)
     printf("time pspeedy = %lf\n", time_speedy);
     printf("time pshuffle = %lf\n", time_shuffle);
     printf("time localSearch = %lf\n", time_local_search);
+    printf("interarrival time = %lf\n", arrival_time/count_arrivals);
+    printf("service time = %lf\n", service_time/count_services);
     printf("loops=%d\n", d);
 #endif
     return 0;
