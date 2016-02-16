@@ -14,4 +14,7 @@
 
 
 # Arguments to use
-run_args="10 20 128 16384 16384 1000 none "
+#run_args="10 20 128 16384 16384 1000 none "
+
+run_args="10 20 128 16384 1024  1000 none "
+

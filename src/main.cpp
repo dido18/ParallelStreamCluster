@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <memory>
+#include <string>
 
 #include "PStream.h"
 #include "SimStream.h"
@@ -44,7 +45,7 @@ int main(int argc, char **argv) {
         fprintf(stderr,"  chunksize:   Number of data points to handle per step\n");
         fprintf(stderr,"  clustersize: Maximum number of intermediate centers\n");
         fprintf(stderr,"  infile:      Input file (if n<=0)\n");
-        fprintf(stderr,"  outfile:     Output file\n");
+        fprintf(stderr,"  outfile:     Derives: outfile results, and outfile_times storing the execution times\n");
         fprintf(stderr,"  farmWorkers: Number of workers to use in the farm\n");
         fprintf(stderr,"  pfWorkers:   Number of workers to use in the parallel for\n");
         fprintf(stderr,"\n");
@@ -126,7 +127,10 @@ int main(int argc, char **argv) {
 
     cout<< "time = " << time<< endl;
 
-    ofstream myfile ("results.txt", ios_base::app);
+    string s(outfilename);
+    string times_res = s+"_times";
+
+    ofstream myfile (times_res, ios_base::app);
 
     if (myfile.is_open())
     {

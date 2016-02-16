@@ -17,6 +17,7 @@
 #include <sys/resource.h>
 #include <limits.h>
 #include <omp.h>
+#include <string>
 
 #ifdef ENABLE_PARSEC_HOOKS
 #include <hooks.h>
@@ -37,7 +38,7 @@ using namespace ff;
 #define ITER 3 // iterate ITER* k log k times; ITER >= 1
 
 //#define PRINTINFO //comment this out to disable output
-#define PROFILE // comment this out to disable instrumentation code
+//#define PROFILE // comment this out to disable instrumentation code
 //#define ENABLE_THREADS  // comment this out to disable threads
 //#define INSERT_WASTE //uncomment this to insert waste computation into dist function
 
@@ -89,6 +90,17 @@ double time_gain_dist;
 double time_gain_init;
 #endif
 
+//dido
+void printPoints(Points const &points){
+    for (int i = 0; i < points.num; ++i) {
+       // cout <<"ID: "<< points.p[i].ID << endl;
+        cout <<"weight: "<< points.p[i].weight << endl;
+        for (int k = 0; k < points.dim; ++k) {
+            cout << points.p[i].coord[k] << " ";
+        }
+        cout << endl << endl;
+    }
+}
 double gettime() {
     struct timeval t;
     gettimeofday(&t,NULL);
@@ -1227,6 +1239,8 @@ void streamCluster( PStream* stream,
         for( int i = 0; i < points.num; i++ ) {
             points.p[i].weight = 1.0;
         }
+        //dido
+      //  printPoints(points);
 
         switch_membership = (bool*)malloc(points.num*sizeof(bool));
         is_center = (bool*)calloc(points.num,sizeof(bool));
@@ -1271,6 +1285,7 @@ void streamCluster( PStream* stream,
     contcenters(&centers);
     outcenterIDs( &centers, centerIDs, outfile);
 }
+
 
 int main(int argc, char **argv)
 {
@@ -1333,14 +1348,25 @@ int main(int argc, char **argv)
 
     double t1 = gettime();
 
-    streamCluster(stream, kmin, kmax, dim, chunksize, clustersize, outfilename );
+    streamCluster(stream, kmin, kmax, dim, chunksize, clustersize, outfilename);
 
     double t2 = gettime();
+    double time = t2-t1;
+    printf("time = %lf\n",time);
 
-    printf("time = %lf\n",t2-t1);
+    string s(outfilename);
+    string times_res = s+"_times";
+
+    ofstream myfile (times_res, ios_base::app);
+
+    if (myfile.is_open())
+    {
+        myfile << time << endl;
+        myfile.close();
+    }
 
     delete stream;
-
+#ifdef PROFILE
     printf("time pgain = %lf\n", time_gain);
     printf("time pgain_dist = %lf\n", time_gain_dist);
     printf("time pgain_init = %lf\n", time_gain_init);
@@ -1349,6 +1375,6 @@ int main(int argc, char **argv)
     printf("time pshuffle = %lf\n", time_shuffle);
     printf("time localSearch = %lf\n", time_local_search);
     printf("loops=%d\n", d);
-
+#endif
     return 0;
 }

@@ -13,6 +13,7 @@ Worker::Worker(int d, long kMIN, long kMAX, long centersz, long pf_workers):
 Points* Worker::svc(Points *points) {
 
     cout<<"Worker "<<get_my_id()<< ": received " << points->num <<"  points" << endl <<flush;
+   // points->to_string();
 
     long k = sc.findCenters(points);
 

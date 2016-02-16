@@ -9,6 +9,8 @@
 \usepackage{booktabs}
 \usepackage{caption}
 \usepackage{geometry}
+\usepackage{pgfplots}
+\pgfplotsset{/pgf/number format/use comma,compat=newest}
 
 \setlength\parindent{0pt} % Removes all indentation from paragraphs
 \renewcommand{\labelenumi}{\alph{enumi}.} % Make numbering in the enumerate environment by letter rather than number (e.g. section 6)
@@ -40,7 +42,7 @@ The report describes the final project addressing the \textbf{StreamCluster (SC)
 
 \section{Design choice}
 
-The algorithm spend most of the time evaluating the gain of opening a new center (\texttt{pgain} function).  For every new point, it weights the cost of making it a new center. If the heuristic determines that the change would be advantageous  ( \texttt{gl_cost_of_opening_x < 0}) the algorithm reassigning some of the existing point to the new point that become a new center.
+The algorithm spend most of the time evaluating the gain of opening a new center (\texttt{pgain} function).  For every new point, it weights the cost of making it a new center. If the heuristic determines that the change would be advantageous  the algorithm reassigning some of the existing point to the new point that become a new center.
 
 The points arrives in chuncks. For every chunk received, the application  computes the centers points and put them into a data structure. When the stream of chunks are finished, the algorithm finds the center points among the centers stored.
 
@@ -66,13 +68,19 @@ Comparing parallel design patterns.
 the short user manual should be detailed enough to enable me to run tests with your software (what should I compile, how, which are the parameters to use to launch experiments, how can I vary parallelism degree, which input files do I need, where are they)
 
 \section{Experimantal results}
-experiment results should show scalability, speedup and efficiency of the implementation(s) as well as the difference among the measured values and the expected ones (according to the performance models)
+In this section is analised three different performance measure for the two parallel solutions.
 
-\subsection{Scalabiility,efficiency,speedup }
+\subsection{Data-parallel}
+
+\subsubsection*{scalability}
 
 
-In this section is described the peer sampling-service with the generic protocol for the dissemination of the information in the system. The peer-sampling service is based itself on a gossip-based protocol, in which each node keeps only a small subset of nodes to communicates with.
-
+\begin{tikzpicture}
+\begin{axis} [axis lines=middle, xmin=1, xmax=16,  ymin=0, ymax=16, grid=major, xlabel=$Parallelism degree$, ylabel=$Completion time$,
+title={Scalability data parallel}]
+\addplot table [col sep=comma] {graphix/ffmap.simlarge.data.csv};
+\end{axis}
+\end{tikzpicture}
 
 
 %\begin{figure}
@@ -82,6 +90,13 @@ In this section is described the peer sampling-service with the generic protocol
 %\label{fig:activePassive}
 %\end{figure}
 
+
+\begin{tikzpicture}
+\begin{axis} [axis lines=middle, xmin=1, xmax=16,  ymin=0, ymax=16, grid=major, xlabel=$parallelism$, ylabel=$scalability$,
+title={Scalability data parallel}]
+\addplot table [col sep=comma] {graphix/fffarmmap.simlarge.data.csv};
+\end{axis}
+\end{tikzpicture}
 
 
 \begin{thebibliography}{9}

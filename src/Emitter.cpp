@@ -12,14 +12,14 @@ Emitter::Emitter(PStream *Stream, long cksize, long d, long kmin, long kmax, int
         stream(Stream), chunksize(cksize), dim(d), sc(pf_workers, kmin, kmax) { }
 
 Points* Emitter::svc(Points * p) {
-        while (1) {
-            float *block = (float *) malloc(chunksize * dim * sizeof(float));
 
-            if (block == NULL) {
-                fprintf(stderr, "not enough memory for a chunk!\n");
-                exit(1);
-            }
 
+    while (1) {
+        float *block = (float *) malloc(chunksize * dim * sizeof(float));
+        if (block == NULL) {
+            fprintf(stderr, "not enough memory for a chunk!\n");
+            exit(1);
+        }
 ///         unique_ptr<Points> points(new Points(dim, chunksize));
             Points *points = new Points(dim, chunksize);
 
@@ -41,6 +41,9 @@ Points* Emitter::svc(Points * p) {
                 points->p[i].weight = 1.0;
                 points->p[i].ID = IDoffset + i;
             }
+            //cout<< "======= emitter points ===================="<< endl;
+            //points->to_string();
+            //cout<< "======= end emitter points ================"<< endl;
 
 
             IDoffset += numRead;
