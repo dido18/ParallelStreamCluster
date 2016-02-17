@@ -21,8 +21,8 @@ set(SOURCE_FILES
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
-add_executable(ff_streamcluster ${SOURCE_FILES})
-
+add_executable(ff_streamcluster ${SOURCE_FILES} )
+target_compile_definitions(ff_streamcluster  PRIVATE NO_DEFAULT_MAPPING)
 
 #version with print info
 add_executable(ff_streamcluster_print ${SOURCE_FILES})
@@ -30,7 +30,7 @@ target_compile_definitions(ff_streamcluster_print PRIVATE PRINTINFO)
 
 #version with only map parallel
 add_executable(ff_streamcluster_map "${CMAKE_CURRENT_SOURCE_DIR}/src_map/ff_streamcluster_map.cpp")
-target_compile_definitions(ff_streamcluster_map PRIVATE FASTFLOW )
+#target_compile_definitions(ff_streamcluster_map PRIVATE FASTFLOW )
 
 # mic version
 #add_executable(ff_streamcluster_mic  ${SOURCE_FILES})
