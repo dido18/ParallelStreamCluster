@@ -33,8 +33,8 @@ add_executable(ff_streamcluster_map "${CMAKE_CURRENT_SOURCE_DIR}/src_map/ff_stre
 target_compile_definitions(ff_streamcluster_map PRIVATE FASTFLOW )
 
 # mic version
-add_executable(ff_streamcluster_mic  ${SOURCE_FILES})
-set_target_properties(ff_streamcluster_mic PROPERTIES COMPILE_FLAGS "-mmic" )
-set_target_properties(ff_streamcluster_mic PROPERTIES LINK_FLAGS "-mmic" )
-target_compile_definitions(ff_streamcluster_mic PRIVATE NO_PRINT)
-add_custom_command(TARGET ff_streamcluster_mic POST_BUILD COMMAND scp ff_streamcluster_mic mic1:)
+#add_executable(ff_streamcluster_mic  ${SOURCE_FILES})
+#set_target_properties(ff_streamcluster_mic PROPERTIES COMPILE_FLAGS "-mmic" )
+#set_target_properties(ff_streamcluster_mic PROPERTIES LINK_FLAGS "-mmic" )
+#target_compile_definitions(ff_streamcluster_mic PRIVATE NO_PRINT)
+#add_custom_command(TARGET ff_streamcluster_mic POST_BUILD COMMAND scp ff_streamcluster_mic mic1:)

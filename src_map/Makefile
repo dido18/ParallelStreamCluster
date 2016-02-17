@@ -10,10 +10,10 @@ FF_ROOT		= ~/fastflow
 #PREFIX        = /home/dido-ubuntu/github/ParallelStreamCluster
 
 #
-CXX		= g++ -std=c++11
+CXX		= icpc -std=c++11
 
 INCLUDES	= -I $(FF_ROOT)
-CXXFLAGS  	= -g 		#for gdb debugging
+#CXXFLAGS  	=  #-g 		#for gdb debugging
 
 LDFLAGS 	= -pthread
 
