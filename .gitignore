@@ -6,7 +6,7 @@ run/
 build/
 
 
-input/
+input
 !input/generateInput.cpp
 
 report/*
