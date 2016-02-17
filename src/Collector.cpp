@@ -51,6 +51,10 @@ Points * Collector::svc(Points * centers) {
 
 void Collector::svc_end() {
     long kFinal;
+    //cout<< "=======Collector final points ===================="<< endl;
+    ///finalCenters->to_string();
+   // cout<< "======= end collector final points ================"<< endl;
+
 
     kFinal = sc.findCenters(finalCenters);
 

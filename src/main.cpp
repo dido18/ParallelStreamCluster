@@ -69,8 +69,7 @@ int main(int argc, char **argv) {
     PStream* stream;
     if( n > 0 ) {
         stream = new SimStream(n);
-    }
-    else {
+    }else {
         stream = new FileStream(infilename);
     }
 
@@ -78,12 +77,12 @@ int main(int argc, char **argv) {
     Emitter *emitter = new Emitter(stream, chunksize, dim, kmin, kmax, pfWorkers);
 
     //collector
-    Collector * collector = new Collector(clustersize, dim, kmin, kmax, pfWorkers,outfilename);
+    Collector *collector = new Collector(clustersize, dim, kmin, kmax, pfWorkers,outfilename);
 
     //farm
     std::vector<ff_node *> Workers;
     for(int i =0; i < farmWorkers; ++i ) {
-            Workers.push_back(new Worker(dim,kmin,kmax,clustersize,pfWorkers)); //pass olso PFGRAIN ??
+        Workers.push_back(new Worker(dim,kmin,kmax,clustersize,pfWorkers)); //pass olso PFGRAIN ??
     }
     ff_farm<> myFarm(Workers,emitter,collector);
 

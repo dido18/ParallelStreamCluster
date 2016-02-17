@@ -1125,7 +1125,8 @@ public:
         size_t count = 0;
         for( int i = 0; i < num && n > 0; i++ ) {
             for( int k = 0; k < dim; k++ ) {
-                dest[i*dim + k] = lrand48()/(float)INT_MAX;
+                auto num = lrand48()/(float)INT_MAX;
+                dest[i*dim + k] = num;
             }
             n--;
             count++;
@@ -1236,7 +1237,13 @@ void streamCluster( PStream* stream,
         double t0 = gettime();
 #endif
         size_t numRead  = stream->read(block, dim, chunksize );
-        fprintf(stderr,"read %d points\n",numRead);
+
+        if(numRead==0){
+            break;
+        }
+
+        fprintf(stderr,"read %d points\n", numRead);
+
 
         if( stream->ferror() || numRead < (unsigned int)chunksize && !stream->feof() ) {
             fprintf(stderr, "error reading data!\n");
@@ -1247,8 +1254,6 @@ void streamCluster( PStream* stream,
         for( int i = 0; i < points.num; i++ ) {
             points.p[i].weight = 1.0;
         }
-        //dido
-        //  printPoints(points);
 
         switch_membership = (bool*)malloc(points.num*sizeof(bool));
         is_center = (bool*)calloc(points.num,sizeof(bool));
@@ -1260,6 +1265,11 @@ void streamCluster( PStream* stream,
         double t1 = gettime();
 #endif
 
+        /*cout<< "----- RECEIVED POINTS :" <<endl;
+        printPoints(points);
+        cout<< "----- END RECEIVED POniTNS :" <<endl;
+*/
+        //search centers
         localSearch(&points,kmin, kmax,&kfinal);
 
         fprintf(stderr,"finish local search\n");
@@ -1277,6 +1287,10 @@ void streamCluster( PStream* stream,
         copycenters(&points, &centers, centerIDs, IDoffset);
         IDoffset += numRead;
 
+        /*cout<< "----- FOUND CENTERS :" <<endl;
+        printPoints(centers);
+        cout<< "----- END REFOUND CENTERS :" <<endl;
+*/
 #ifdef PRINTINFO
         printf("finish copy centers\n");
 #endif
@@ -1293,6 +1307,9 @@ void streamCluster( PStream* stream,
             break;
         }
     }
+
+   // cout << "FINAL CENTERS:"<< endl;
+    //printPoints(centers);
 
     //finally cluster all temp centers
     switch_membership = (bool*)malloc(centers.num*sizeof(bool));
