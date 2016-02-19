@@ -17,13 +17,14 @@
 #include "Worker.h"
 #include "Collector.h"
 
+
 #define MAXNAMESIZE 1024 // max filename length
 #define SEED 1
 
 
 using namespace ff;
 using namespace std;
-using namespace helper;
+using namespace Helper;
 
 int main(int argc, char **argv) {
     char *outfilename = new char[MAXNAMESIZE];
@@ -114,18 +115,18 @@ int main(int argc, char **argv) {
     //Pipe of farm and my collector
     //ff_Pipe<Points> myPipe(myFarm, Collector);
 
-    double t1 = gettime();
+    double t1 = Helper::gettime();
     if (myFarm.run_and_wait_end()<0) {
-        error("running Pipe\n");
+        error("running Farm\n");
         return -1;
     }
-    double t2 = gettime();
+    double t2 = Helper::gettime();
 
     double time = t2-t1;
 
-
-    cout<< "time = " << time<< endl;
-
+    cout.precision(10);
+    cout << fixed << time <<endl;// " : " << Helper::TIME_ARRIVAL << " : " << Helper::TIME_SERVICE << endl;
+/*
     string s(outfilename);
     string times_res = s+"_times";
 
@@ -136,7 +137,7 @@ int main(int argc, char **argv) {
         myfile << time << endl;
         myfile.close();
     }
-
+*/
     delete stream;
 
     return 0;

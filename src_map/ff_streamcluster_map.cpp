@@ -37,13 +37,14 @@ using namespace ff;
 /* higher ITER also scales the running time almost linearly */
 #define ITER 3 // iterate ITER* k log k times; ITER >= 1
 
-//#define PRINTINFO //comment this out to disable output
+//#define NO_PRINT //comment this out to disable output
 #define PROFILE // comment this out to disable instrumentation code
 //#define ENABLE_THREADS  // comment this out to disable threads
 //#define INSERT_WASTE //uncomment this to insert waste computation into dist function
 
 // fastflow parallefor parameters used in pgain() parallelization
 #define FASTFLOW      //comment this out to enable fastflow parallel for in pgain function
+
 int  PFWORKERS = 1;   // parallel_for parallelism degree
 int  PFGRAIN = 0;     //dafualt static scheduling of iterations
 
@@ -229,7 +230,7 @@ float pspeedy(Points *points, float z, long *kcenter, int pid, pthread_barrier_t
   static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 #endif
 
-#ifdef PRINTINFO
+#ifndef NO_PRINT
     if( pid == 0 ){
     fprintf(stderr, "Speedy: facility cost %lf\n", z);
   }
@@ -334,7 +335,7 @@ float pspeedy(Points *points, float z, long *kcenter, int pid, pthread_barrier_t
     pthread_barrier_wait(barrier);
 #endif
 
-#ifdef PRINTINFO
+#ifndef NO_PRINT
     if( pid == 0 )
     {
       fprintf(stderr, "Speedy opened %d facilities for total cost %lf\n",
@@ -717,7 +718,7 @@ float pFL(Points *points, int *feasible, int numfeasible,
         }
 
         cost -= change;
-#ifdef PRINTINFO
+#ifndef NO_PRINT
         if( pid == 0 ) {
       fprintf(stderr, "%d centers, cost %lf, total distance %lf\n",
 	      *k, cost, cost - z*(*k));
@@ -830,7 +831,7 @@ float pkmedian(Points *points, long kmin, long kmax, long* kfinal,
     long k2 = k1 + bsize;
     if( pid == nproc-1 ) k2 = points->num;
 
-#ifdef PRINTINFO
+#ifndef NO_PRINT
     if( pid == 0 )
     {
       printf("Starting Kmedian procedure\n");
@@ -876,7 +877,7 @@ float pkmedian(Points *points, long kmin, long kmax, long* kfinal,
     if( pid == 0 ) shuffle(points);
     cost = pspeedy(points, z, &k, pid, barrier);
 
-#ifdef PRINTINFO
+#ifndef NO_PRINT
     if( pid == 0 )
     printf("thread %d: Finished first call to speedy, cost=%lf, k=%i\n",pid,cost,k);
 #endif
@@ -887,13 +888,13 @@ float pkmedian(Points *points, long kmin, long kmax, long* kfinal,
         i++;
     }
 
-#ifdef PRINTINFO
+#ifndef NO_PRINT
     if( pid==0)
     printf("thread %d: second call to speedy, cost=%lf, k=%d\n",pid,cost,k);
 #endif
     /* if still not enough facilities, assume z is too high */
     while (k < kmin) {
-#ifdef PRINTINFO
+#ifndef NO_PRINT
         if( pid == 0 ) {
       printf("%lf %lf\n", loz, hiz);
       printf("Speedy indicates we should try lower z\n");
@@ -924,7 +925,7 @@ float pkmedian(Points *points, long kmin, long kmax, long* kfinal,
 
     while(1) {
         d++;
-#ifdef PRINTINFO
+#ifndef NO_PRINT
         if( pid==0 )
       {
 	printf("loz = %lf, hiz = %lf\n", loz, hiz);
@@ -942,7 +943,7 @@ float pkmedian(Points *points, long kmin, long kmax, long* kfinal,
         if (((k <= (1.1)*kmax)&&(k >= (0.9)*kmin))||
             ((k <= kmax+2)&&(k >= kmin-2))) {
 
-#ifdef PRINTINFO
+#ifndef NO_PRINT
             if( pid== 0)
 	{
 	  printf("Trying a more accurate local search...\n");
@@ -1241,9 +1242,9 @@ void streamCluster( PStream* stream,
         if(numRead==0){
             break;
         }
-
+#ifndef NO_PRINT
         fprintf(stderr,"read %d points\n", numRead);
-
+#endif
 
         if( stream->ferror() || numRead < (unsigned int)chunksize && !stream->feof() ) {
             fprintf(stderr, "error reading data!\n");
@@ -1271,8 +1272,9 @@ void streamCluster( PStream* stream,
 */
         //search centers
         localSearch(&points,kmin, kmax,&kfinal);
-
+#ifndef NO_PRINT
         fprintf(stderr,"finish local search\n");
+#endif
         contcenters(&points);
         if( kfinal + centers.num > centersize ) {
             //here we don't handle the situation where # of centers gets too large.
@@ -1280,7 +1282,7 @@ void streamCluster( PStream* stream,
             exit(1);
         }
 
-#ifdef PRINTINFO
+#ifndef NO_PRINT
         printf("finish cont center\n");
 #endif
 
@@ -1291,7 +1293,7 @@ void streamCluster( PStream* stream,
         printPoints(centers);
         cout<< "----- END REFOUND CENTERS :" <<endl;
 */
-#ifdef PRINTINFO
+#ifndef NO_PRINT
         printf("finish copy centers\n");
 #endif
 
@@ -1387,9 +1389,14 @@ int main(int argc, char **argv)
 
     double t2 = gettime();
     double time = t2-t1;
-    printf("time = %lf\n",time);
 
-    string s(outfilename);
+
+    cout.precision(10);
+    cout << fixed << time << " : " << arrival_time/count_arrivals << " : " << service_time/count_services;
+
+    //printf("time = %lf\n",time);
+
+/*    string s(outfilename);
     string times_res = s+"_times";
 
     ofstream myfile (times_res, ios_base::app);
@@ -1399,19 +1406,19 @@ int main(int argc, char **argv)
         myfile << time << endl;
         myfile.close();
     }
-
+*/
     delete stream;
 #ifdef PROFILE
-    printf("time pgain = %lf\n", time_gain);
-    printf("time pgain_dist = %lf\n", time_gain_dist);
-    printf("time pgain_init = %lf\n", time_gain_init);
-    printf("time pselect = %lf\n", time_select_feasible);
-    printf("time pspeedy = %lf\n", time_speedy);
-    printf("time pshuffle = %lf\n", time_shuffle);
-    printf("time localSearch = %lf\n", time_local_search);
-    printf("interarrival time = %lf\n", arrival_time/count_arrivals);
-    printf("service time = %lf\n", service_time/count_services);
-    printf("loops=%d\n", d);
+   /// printf("time pgain = %lf\n", time_gain);
+    //printf("time pgain_dist = %lf\n", time_gain_dist);
+    //printf("time pgain_init = %lf\n", time_gain_init);
+    //printf("time pselect = %lf\n", time_select_feasible);
+   // printf("time pspeedy = %lf\n", time_speedy);
+    //printf("time pshuffle = %lf\n", time_shuffle);
+    //printf("time localSearch = %lf\n", time_local_search);
+   //printf("interarrival time = %lf\n", arrival_time/count_arrivals);
+   // printf("service time = %lf\n", service_time/count_services);
+    //printf("loops=%d\n", d);
 #endif
     return 0;
 }

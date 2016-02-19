@@ -3,6 +3,16 @@
 //
 
 #include "Emitter.h"
+#include "Helper.h"
+
+
+#define PROFILE
+//#define NO_PRINT
+
+#ifdef PROFILE
+    double arrival_time=0;
+    double arrival_count=0;
+#endif
 
 
 using namespace std;
@@ -15,6 +25,10 @@ Points *Emitter::svc(Points *p) {
 
 
     while (1) {
+#ifdef PROFILE
+        double t0 = Helper::gettime();
+#endif
+
         float *block = (float *) malloc(chunksize * dim * sizeof(float));
         if (block == NULL) {
             fprintf(stderr, "not enough memory for a chunk!\n");
@@ -37,9 +51,9 @@ Points *Emitter::svc(Points *p) {
       //  for (int i = 0; i < chunksize * dim; ++i) {
        //     cout << i << " " << block[i] << endl;
        // }
-
+#ifndef NO_PRINT
         cout << "Emitter reads  " << numRead << " points" << endl << flush;
-
+#endif
         if (stream->ferror() || numRead < (unsigned int) chunksize && !stream->feof()) {
             fprintf(stderr, "error reading data!\n");
             break;
@@ -56,6 +70,10 @@ Points *Emitter::svc(Points *p) {
         //cout<< "======= end emitter points ================"<< endl;
 
         IDoffset += numRead;
+#ifdef PROFILE
+        arrival_count++;
+        arrival_time += Helper::gettime() - t0;
+#endif
 
         ff_send_out(points);
         if (stream->feof()) {
@@ -66,4 +84,13 @@ Points *Emitter::svc(Points *p) {
 
     return EOS;   // the stream is finished
 };
+
+void Emitter::svc_end(){
+
+    Helper::TIME_ARRIVAL = arrival_time / arrival_count;
+
+#ifndef NO_PRINT
+    cout <<"Arrival time " <<arrival_time/arrival_count << " s" << endl;
+#endif
+}
 

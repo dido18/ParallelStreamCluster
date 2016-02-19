@@ -20,9 +20,6 @@ public:
         for( int i = 0; i < num && n > 0; i++ ) {
             for( int k = 0; k < dim; k++ ) {
                 dest[i*dim + k] = lrand48()/(float)INT_MAX;
-                //cout << INT_MAX << endl;
-                //cout << "asdasdasdasd " << lrand48()/(float)INT_MAX << endl << endl;
-                //dest[i*dim + k] = i;
             }
             n--;
             count++;

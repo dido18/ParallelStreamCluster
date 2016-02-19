@@ -9,8 +9,7 @@
 #include <sys/time.h>
 
 // header
-namespace helper
-{
+namespace Helper {
     //static long start(unique_ptr<Points> p, float kMin, float kMax, int dim, long centersize){
     /*static long start(Points * p, float kMin, float kMax, int dim, long centersize){
         long* kfinal;
@@ -18,13 +17,16 @@ namespace helper
         return *kfinal;
     }*/
 
+    extern double TIME_SERVICE;
+    extern double TIME_ARRIVAL;
 
     static double gettime() {
         struct timeval t;
         gettimeofday(&t, NULL);
-        return (double) t.tv_sec + t.tv_usec * 1e-6;
+        return (double) t.tv_sec + t.tv_usec * 1e-6; //secondi
     }
 
-}
 
+
+}
 #endif //PARALLELSTREAMCLUSTER_HELPER_H

@@ -3,18 +3,33 @@
 //
 
 #include "Collector.h"
+#include "Helper.h"
 
-#define PRINT_INFO
+
+//#define NO_PRINT
+#define PROFILE
+
+#ifdef PROFILE
+    double service_time = 0;
+    double service_count=0;
+    double prec = Helper::gettime();
+#endif
 
 using namespace std;
 using namespace ff;
 
-
 Points * Collector::svc(Points * centers) {
 
+#ifdef PROFILE
+    double now = Helper::gettime();
+    service_time += now - prec;
+    prec = now;
+    service_count++;
+#endif
+
+#ifndef NO_PRINT
     cout <<"Collector has received "<< centers->num<<" centers "<<endl;
-#ifdef PRINTINFO
-    centers->to_string();
+    //centers->to_string();
 #endif
 
     if(finalCenters->num + centers->num > clustersize ){
@@ -50,7 +65,11 @@ Points * Collector::svc(Points * centers) {
 };
 
 void Collector::svc_end() {
+
+    Helper::TIME_SERVICE = service_time / service_count;
+
     long kFinal;
+
     //cout<< "=======Collector final points ===================="<< endl;
     ///finalCenters->to_string();
    // cout<< "======= end collector final points ================"<< endl;
@@ -58,15 +77,22 @@ void Collector::svc_end() {
 
     kFinal = sc.findCenters(finalCenters);
 
+#ifndef NO_PRINT
     cout<<"Collector finish local search on final centers " <<endl;
-
+#endif
     sc.contcenters(finalCenters);
 
-#ifdef PRINTINFO
+#ifndef NO_PRINT
     cout<<"Collector  finish cont center:"<< endl;
-    finalCenters->to_string();
+    //finalCenters->to_string();
 #endif
     sc.myOutcenterIDs(finalCenters,outFile);
+
+#ifdef PROFILE
+#ifndef NO_PRINT
+    cout<<"Service Time : " << service_time/service_count << " s" <<endl;
+#endif
+#endif
 
     free(centerBlock);
     delete finalCenters;

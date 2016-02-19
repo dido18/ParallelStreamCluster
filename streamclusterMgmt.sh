@@ -41,7 +41,7 @@ case "$1" in
         	N_DEGREE=$(($3+$4))
 		     for i in `seq 1 $5`;
 		     do
-		           ${BINARY_PATH} ${RUN_ARGS} ${OUTPUT_PATH} ${3}  ${4}
+		           ${BINARY_PATH} ${RUN_ARGS} ${OUTPUT_PATH} ${3} ${4}
              done
 
             ;;
@@ -68,10 +68,10 @@ case "$1" in
 esac
 
 #execute perl script that compute the average time of the execution
-read AVERAGE <<<$(./average_time.pl $OUTPUT_PATH_TIMES)
-echo "Perl script executes the average times: $AVERAGE "
+#read AVERAGE <<<$(./average_time.pl $OUTPUT_PATH_TIMES)
+#echo "Perl script executes the average times: $AVERAGE "
 
-echo "$N_DEGREE,$AVERAGE" >> $LATEX_DATA
-echo "Writes ($N_DEGREE, $AVERAGE) in $LATEX_DATA"
+#echo "$N_DEGREE,$AVERAGE" >> $LATEX_DATA
+#echo "Writes ($N_DEGREE, $AVERAGE) in $LATEX_DATA"
 
 

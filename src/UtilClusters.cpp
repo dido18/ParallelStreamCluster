@@ -14,7 +14,7 @@
 /* higher ITER also scales the running time almost linearly */
 #define ITER 3 // iterate ITER* k log k times; ITER >= 1
 
-//#define PRINTINFO //comment this out to disable output
+//#define NO_PRINT //comment this out to disable output
 #define PROFILE // comment this out to disable instrumentation code
 //#define ENABLE_THREADS  // comment this out to disable threads
 //#define INSERT_WASTE //uncomment this to insert waste computation into dist function
@@ -155,7 +155,7 @@ float UtilClusters::pspeedy(Points *points, float z, long *kcenter, int pid, pth
   static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 #endif
 
-#ifdef PRINTINFO
+#ifndef NO_PRINT
     if( pid == 0 ){
     fprintf(stderr, "Speedy: facility cost %lf\n", z);
   }
@@ -260,7 +260,7 @@ float UtilClusters::pspeedy(Points *points, float z, long *kcenter, int pid, pth
     pthread_barrier_wait(barrier);
 #endif
 
-#ifdef PRINTINFO
+#ifndef NO_PRINT
     if( pid == 0 )
     {
       fprintf(stderr, "Speedy opened %d facilities for total cost %lf\n",
@@ -701,7 +701,7 @@ float UtilClusters::pFL(Points *points, int *feasible, int numfeasible,
         }
 
         cost -= change;
-#ifdef PRINTINFO
+#ifndef NO_PRINT
         if( pid == 0 ) {
       fprintf(stderr, "%d centers, cost %lf, total distance %lf\n",
 	      *k, cost, cost - z*(*k));
@@ -742,7 +742,7 @@ float UtilClusters::pkmedian(Points *points, long kmin, long kmax, long *kfinal,
     long k2 = k1 + bsize;
     if (pid == nproc - 1) k2 = points->num;
 
-#ifdef PRINTINFO
+#ifndef NO_PRINT
     if( pid == 0 )
         {
           printf("Starting Kmedian procedure\n");
@@ -789,7 +789,7 @@ float UtilClusters::pkmedian(Points *points, long kmin, long kmax, long *kfinal,
     if (pid == 0) shuffle(points);
     cost = pspeedy(points, z, &k, pid, barrier);
 
-#ifdef PRINTINFO
+#ifndef NO_PRINT
     if( pid == 0 )
         printf("thread %d: Finished first call to speedy, cost=%lf, k=%i\n",pid,cost,k);
 #endif
@@ -800,13 +800,14 @@ float UtilClusters::pkmedian(Points *points, long kmin, long kmax, long *kfinal,
         i++;
     }
 
-#ifdef PRINTINFO
+#ifndef NO_PRINT
     if( pid==0)
         printf("thread %d: second call to speedy, cost=%lf, k=%d\n",pid,cost,k);
 #endif
     /* if still not enough facilities, assume z is too high */
     while (k < kmin) {
-#ifdef PRINTINFO
+
+#ifndef NO_PRINT
         if( pid == 0 ) {
           printf("%lf %lf\n", loz, hiz);
           printf("Speedy indicates we should try lower z\n");
@@ -840,7 +841,7 @@ float UtilClusters::pkmedian(Points *points, long kmin, long kmax, long *kfinal,
 
     while (1) {
         d++;
-#ifdef PRINTINFO
+#ifndef NO_PRINT
         if( pid==0 )
           {
         printf("loz = %lf, hiz = %lf\n", loz, hiz);
@@ -858,7 +859,7 @@ float UtilClusters::pkmedian(Points *points, long kmin, long kmax, long *kfinal,
         if (((k <= (1.1) * kmax) && (k >= (0.9) * kmin)) ||
             ((k <= kmax + 2) && (k >= kmin - 2))) {
 
-#ifdef PRINTINFO
+#ifndef NO_PRINT
             if( pid== 0)
         {
           printf("Trying a more accurate local search...\n");

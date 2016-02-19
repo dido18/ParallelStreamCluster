@@ -26,6 +26,9 @@ public:
 
     Points *svc (Points *);
 
+    void svc_end();
+
+
     int run_and_wait_end(bool=false);
 
 
