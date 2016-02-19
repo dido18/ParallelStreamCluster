@@ -38,7 +38,7 @@ using namespace ff;
 #define ITER 3 // iterate ITER* k log k times; ITER >= 1
 
 //#define NO_PRINT //comment this out to disable output
-#define PROFILE // comment this out to disable instrumentation code
+//#define PROFILE // comment this out to disable instrumentation code
 //#define ENABLE_THREADS  // comment this out to disable threads
 //#define INSERT_WASTE //uncomment this to insert waste computation into dist function
 
@@ -82,8 +82,6 @@ static int ompthreads;
 
 // instrumentation code
 #ifdef PROFILE
-    double arrival_time;
-    double service_time;
     double time_local_search;
     double time_speedy;
     double time_select_feasible;
@@ -91,8 +89,6 @@ static int ompthreads;
     double time_shuffle;
     double time_gain_dist;
     double time_gain_init;
-    double count_arrivals=0; //count the number of chunksize arrival;
-    double count_services =0; //cont the number of arrival times evaluated
 #endif
 
 //dido
@@ -1260,11 +1256,6 @@ void streamCluster( PStream* stream,
         is_center = (bool*)calloc(points.num,sizeof(bool));
         center_table = (int*)malloc(points.num*sizeof(int));
 
-#ifdef PROFILE
-        arrival_time += gettime()-t0;
-        count_arrivals++;
-        double t1 = gettime();
-#endif
 
         /*cout<< "----- RECEIVED POINTS :" <<endl;
         printPoints(points);
@@ -1297,10 +1288,6 @@ void streamCluster( PStream* stream,
         printf("finish copy centers\n");
 #endif
 
-#ifdef PROFILE
-        service_time += gettime()-t1;
-        count_services++;
-#endif
         free(is_center);
         free(switch_membership);
         free(center_table);
@@ -1390,35 +1377,18 @@ int main(int argc, char **argv)
     double t2 = gettime();
     double time = t2-t1;
 
+    printf("time = %lf\n",time);
 
-    cout.precision(10);
-    cout << fixed << time << " : " << arrival_time/count_arrivals << " : " << service_time/count_services;
-
-    //printf("time = %lf\n",time);
-
-/*    string s(outfilename);
-    string times_res = s+"_times";
-
-    ofstream myfile (times_res, ios_base::app);
-
-    if (myfile.is_open())
-    {
-        myfile << time << endl;
-        myfile.close();
-    }
-*/
     delete stream;
 #ifdef PROFILE
-   /// printf("time pgain = %lf\n", time_gain);
-    //printf("time pgain_dist = %lf\n", time_gain_dist);
-    //printf("time pgain_init = %lf\n", time_gain_init);
-    //printf("time pselect = %lf\n", time_select_feasible);
-   // printf("time pspeedy = %lf\n", time_speedy);
-    //printf("time pshuffle = %lf\n", time_shuffle);
-    //printf("time localSearch = %lf\n", time_local_search);
-   //printf("interarrival time = %lf\n", arrival_time/count_arrivals);
-   // printf("service time = %lf\n", service_time/count_services);
-    //printf("loops=%d\n", d);
+   printf("time pgain = %lf\n", time_gain);
+   printf("time pgain_dist = %lf\n", time_gain_dist);
+   printf("time pgain_init = %lf\n", time_gain_init);
+   printf("time pselect = %lf\n", time_select_feasible);
+   printf("time pspeedy = %lf\n", time_speedy);
+   printf("time pshuffle = %lf\n", time_shuffle);
+   printf("time localSearch = %lf\n", time_local_search);
+   printf("loops=%d\n", d);
 #endif
     return 0;
 }

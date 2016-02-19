@@ -126,18 +126,7 @@ int main(int argc, char **argv) {
 
     cout.precision(10);
     cout << fixed << time <<endl;// " : " << Helper::TIME_ARRIVAL << " : " << Helper::TIME_SERVICE << endl;
-/*
-    string s(outfilename);
-    string times_res = s+"_times";
 
-    ofstream myfile (times_res, ios_base::app);
-
-    if (myfile.is_open())
-    {
-        myfile << time << endl;
-        myfile.close();
-    }
-*/
     delete stream;
 
     return 0;

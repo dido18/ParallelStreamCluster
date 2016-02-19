@@ -10,7 +10,7 @@ use warnings FATAL => 'all';
       perl run_map_on_mic.pl simlarge 4 > testResults/farm.output.mic
 =cut
 
-my $usage="$0 [simmedium, simlarge, native]  nTimes \n";
+my $usage="$0 [simmedium, simlarge, native] nWorkers \n";
 
 my $num_args=$#ARGV + 1;  #ARGV[0] contains the first argument
 
@@ -20,7 +20,8 @@ if($num_args < 2){
 }
 
 my $test_type = $ARGV[0];
-my $times = $ARGV[1];
+#my $times = $ARGV[1];
+my $workers = $ARGV[1];
 
 my $output = "rodinia.$test_type.mic";
 
@@ -46,18 +47,19 @@ elsif ($test_type  eq "simlarge"){
 #pfworkers set equal to one
 #my $pfworkers=1;
 
+
 #run the script for multiple cores nTimes
-foreach my $workers (1,5,10,15,20,25,30,35,40,45,50,55,60,65) {
-    my $sum = 0;
+#foreach my $workers (1,5,10,15,20,25,30,35,40,45,50,55,60,65) {
+#    my $sum = 0;
 
     my $runconf = "$pathBin $arg $output $workers";# $pfworkers ";
-    print STDERR "running $runconf :\n";
-    foreach my $time (1.. $times){
+    print STDERR "running $runconf \n";
+#    foreach my $time (1.. $times){
         my $res = `\\ssh mic0 $runconf 2>&1`;
         print STDERR "$res ";
-        $sum = $sum + $res;
-    }
-    my $avg= $sum/$times;
-    print "$pfworkers, $avg\n";
-    print STDERR "\n";
-}
+#        $sum = $sum + $res;
+#    }
+#    my $avg= $sum/$times;
+#    print "$workers, $avg\n";
+#    print STDERR "\n";
+#}

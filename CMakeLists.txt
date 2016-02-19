@@ -24,25 +24,21 @@ set(SOURCE_FILES
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
+#ff_farm version with print info (host)
 add_executable(ff_streamcluster ${SOURCE_FILES})
-target_compile_definitions(ff_streamcluster  PRIVATE NO_DEFAULT_MAPPING=1  NO_PRINT=1)
+target_compile_definitions(ff_streamcluster  PRIVATE NO_DEFAULT_MAPPING=1  PROFILE=1)
 
-#version with print info
-add_executable(ff_streamcluster_print ${SOURCE_FILES})
-target_compile_definitions(ff_streamcluster_print PRIVATE NO_DEFAULT_MAPPING=1)
-
-# mic version
+# ff_farm version from mic version
 add_executable(ff_streamcluster_mic  ${SOURCE_FILES})
 set_target_properties(ff_streamcluster_mic PROPERTIES COMPILE_FLAGS "-mmic" )
 set_target_properties(ff_streamcluster_mic PROPERTIES LINK_FLAGS "-mmic" )
 target_compile_definitions(ff_streamcluster_mic PRIVATE NO_PRINT=1 )
 add_custom_command(TARGET ff_streamcluster_mic POST_BUILD COMMAND scp "${CMAKE_CURRENT_SOURCE_DIR}/bin/ff_streamcluster_mic" mic0:)
 
-#version with only map parallel
+#ff_map parallel
 add_executable(ff_streamcluster_map "${CMAKE_CURRENT_SOURCE_DIR}/src_map/ff_streamcluster_map.cpp")
-target_compile_definitions(ff_streamcluster_map PRIVATE FASTFLOW )
 
-#version with only map parallel on MIC
+#ff_map parallel on MIC
 add_executable(ff_streamcluster_map_mic "${CMAKE_CURRENT_SOURCE_DIR}/src_map/ff_streamcluster_map.cpp")
 set_target_properties(ff_streamcluster_map_mic PROPERTIES COMPILE_FLAGS "-mmic" )
 set_target_properties(ff_streamcluster_map_mic PROPERTIES LINK_FLAGS "-mmic" )
@@ -50,7 +46,11 @@ target_compile_definitions(ff_streamcluster_map_mic PRIVATE NO_PRINT=1 )
 add_custom_command(TARGET ff_streamcluster_map_mic POST_BUILD COMMAND scp "${CMAKE_CURRENT_SOURCE_DIR}/bin/ff_streamcluster_map_mic" mic0:)
 
 
-#rodinia on mic
+#rodinia parallel with print (host)
+add_executable(rodinia_orig "${CMAKE_CURRENT_SOURCE_DIR}/rodinia_streamcluster/streamcluster_original.cpp")
+target_compile_definitions(rodinia_orig  PRIVATE PROFILE=1)
+
+#rodinia parallel mic version
 add_executable(rodinia_mic "${CMAKE_CURRENT_SOURCE_DIR}/rodinia_streamcluster/streamcluster_original.cpp")
 set_target_properties(rodinia_mic PROPERTIES COMPILE_FLAGS "-mmic" )
 set_target_properties(rodinia_mic PROPERTIES LINK_FLAGS "-mmic" )

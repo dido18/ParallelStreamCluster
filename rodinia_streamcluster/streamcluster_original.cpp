@@ -54,8 +54,8 @@ using namespace std;
 /* higher ITER also scales the running time almost linearly */
 #define ITER 3 // iterate ITER* k log k times; ITER >= 1
 
-#define PRINTINFO //comment this out to disable output
-#define PROFILE // comment this out to disable instrumentation code
+//#define PRINTINFO //comment this out to disable output
+//#define PROFILE // comment this out to disable instrumentation code
 //#define ENABLE_THREADS  // comment this out to disable threads
 //#define INSERT_WASTE //uncomment this to insert waste computation into dist function
 

@@ -6,26 +6,10 @@
 #include "Helper.h"
 
 
-//#define NO_PRINT
-#define PROFILE
-
-#ifdef PROFILE
-    double service_time = 0;
-    double service_count=0;
-    double prec = Helper::gettime();
-#endif
-
 using namespace std;
 using namespace ff;
 
 Points * Collector::svc(Points * centers) {
-
-#ifdef PROFILE
-    double now = Helper::gettime();
-    service_time += now - prec;
-    prec = now;
-    service_count++;
-#endif
 
 #ifndef NO_PRINT
     cout <<"Collector has received "<< centers->num<<" centers "<<endl;
@@ -66,14 +50,11 @@ Points * Collector::svc(Points * centers) {
 
 void Collector::svc_end() {
 
-    Helper::TIME_SERVICE = service_time / service_count;
-
     long kFinal;
 
     //cout<< "=======Collector final points ===================="<< endl;
     ///finalCenters->to_string();
    // cout<< "======= end collector final points ================"<< endl;
-
 
     kFinal = sc.findCenters(finalCenters);
 
@@ -86,13 +67,12 @@ void Collector::svc_end() {
     cout<<"Collector  finish cont center:"<< endl;
     //finalCenters->to_string();
 #endif
-    sc.myOutcenterIDs(finalCenters,outFile);
+    sc.myOutcenterIDs(finalCenters, outFile);
 
-#ifdef PROFILE
 #ifndef NO_PRINT
-    cout<<"Service Time : " << service_time/service_count << " s" <<endl;
+    cout<<"Collector " << finalCenters->num <<"points in "<<finalCenters->dim <<" dimension" <<endl;
 #endif
-#endif
+
 
     free(centerBlock);
     delete finalCenters;
