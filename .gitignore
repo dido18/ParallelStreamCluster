@@ -9,7 +9,7 @@ build/
 input
 !input/generateInput.cpp
 
-report/*
+report/
 !report/report_latex/graphix/
 
 .idea

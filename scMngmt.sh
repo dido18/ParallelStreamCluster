@@ -1,12 +1,12 @@
 #!/bin/bash
 #--------------------------------------
-# streamclusterMgmt.sh  run binary with an input different times.
+# scMngmt.sh  run binary with an input different times.
 #
 #
 #----------------------------------------
 mkdir -p run
 
-USAGE="usage: $0 [ff_map | ff_farm | parsec | rodinia] [simsmall | simmedum | simlarge] nWorkers nTimes "
+USAGE="usage: $0 [ff_map | ff_farm | parsec | rodinia] [simsmall | simmedum | simlarge | native] nWorkers nTimes "
 
 #check the number of input of the script
 if [ $# -lt 4 ];

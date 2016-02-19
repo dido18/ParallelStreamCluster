@@ -1,21 +1,5 @@
-#!/bin/bash
-#
-# simlarge.runconf - file containing information necessary to run a specific
-#                    program of the PARSEC benchmark suite
-#
-# Copyright (C) 2007 Princeton University
-# Written by Christian Bienia
+run_args="10 20 128 16384 256 2000 none"
 
-# This is the information which we need to run the program. Each package of the
-# benchmark suite has such a file with information that will be added to the
-# global configuration. All variables set in the global configuration files can
-# be referenced here.
+#run_args="10 20 128 16384 16384 1000 none "
 
-
-
-# Arguments to use
-run_args="10 20 128 16384 16384 1000 none "
-
-#stream vesrion (16 chunks of 1024 points)
-#run_args="10 20 128 16384 1024  1000 none "
 

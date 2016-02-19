@@ -1,17 +1,2 @@
-#!/bin/bash
-#
-# simmedium.runconf - file containing information necessary to run a specific
-#                     program of the PARSEC benchmark suite
-#
-# Copyright (C) 2007 Princeton University
-# Written by Christian Bienia
-
-# This is the information which we need to run the program. Each package of the
-# benchmark suite has such a file with information that will be added to the
-# global configuration. All variables set in the global configuration files can
-# be referenced here.
-
-
-
-# Arguments to use
+run_args="10 20 64 8192 128 1000 none"
 run_args="10 20 64 8192 8192 1000 none "

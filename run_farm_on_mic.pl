@@ -13,7 +13,7 @@ use POSIX;  #ceil() function
 =cut
 
 
-my $usage="$0 [simlarge, native]  nTimes \n";
+my $usage="$0 [simmedium | simlarge, native]  nTimes \n";
 
 my $num_args=$#ARGV + 1;  #ARGV[0] contains the first argument
 
@@ -32,10 +32,18 @@ my $pathBin = "./ff_streamcluster_mic ";
 #pfworkers set equal to one
 my $pfworkers=1;
 
+#load the conf file args.
+my $filename = "conf/$test_type.runconf";
+open(my $fh, '<:encoding(UTF-8)', $filename)  or die "Could not open file '$filename' $!";
+my $line = <$fh>;   # read the first line
+my @words = split /["]/, $line;
+close($fh);
+
+my $args = $words[1];
+
 #run the script for multiple cores nTimes
 foreach my $workers (1,5,10,15,20,25,30,35,40,45,50,55,60,65) {
     my $sum = 0;
-    my $args = getArguments($workers, $test_type);
     my $runconf = "$pathBin $args $output $workers $pfworkers ";
     print STDERR "Running $runconf \n";
     foreach my $time (1.. $times){
@@ -51,25 +59,21 @@ foreach my $workers (1,5,10,15,20,25,30,35,40,45,50,55,60,65) {
 
 
 sub getArguments{
-    my $nWorkers = $_[0]; #first argument is the number of workers
-    my $testType = $_[1];  #  seconf argument is the rype of test.
+    my $testType = $_[0];  #  seconf argument is the rype of test.
 
-    my $args;
+
     if($testType  eq "simmedium"){
-        my $n=8192;             #points simmedium
-        my $chunk = ceil($n / $nWorkers);
-        $args = "10 20 64 $n $chunk 1000 none";
+        #points simmedium (8192 points= 64 chunks with 128 points, of 64 dimensions)
+        $args = "10 20 64 8192 128 1000 none";
         return  $args;
     }
     elsif ($testType  eq "simlarge") {
-        my $n = 16384;            #points simlarge;
-        my $chunk = ceil( $n / $nWorkers );
-        $args = "10 20 128  $n $chunk 1000 none";
+        #points simlarge (16384 points = 64 chunks with 256 points of 128 dimensions)
+        $args = "10 20 128 16384 256 2000 none";
         return  $args;
     }elsif ($testType  eq "native"){
-        my $n=1000000;              #points native;
-        my $chunk = ceil($n / $nWorkers);
-        $args = "10 20 128 $n $chunk 5000 none ";
+        #points native (1000000 points = 500 chunksize with 2000 points of 128 dimensions)
+        $args = "10 20 128 1000000 2000 5000 none ";
         return  $args;
     }
     else{

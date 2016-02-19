@@ -64,13 +64,13 @@ void Collector::svc_end() {
     sc.contcenters(finalCenters);
 
 #ifndef NO_PRINT
-    cout<<"Collector  finish cont center:"<< endl;
+    cout<<"Collector finish cont center:"<< endl;
     //finalCenters->to_string();
 #endif
     sc.myOutcenterIDs(finalCenters, outFile);
 
 #ifndef NO_PRINT
-    cout<<"Collector " << finalCenters->num <<"points in "<<finalCenters->dim <<" dimension" <<endl;
+    cout<<"Collector " << finalCenters->num <<" points in "<<finalCenters->dim <<" dimension" <<endl;
 #endif
 
 
