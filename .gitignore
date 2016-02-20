@@ -10,7 +10,7 @@ input
 !input/generateInput.cpp
 
 report/
-!report/report_latex/graphix/
+#!report/report_latex/graphix/
 
 .idea
 

@@ -40,11 +40,12 @@ my @words = split /["]/, $line;
 close($fh);
 
 my $args = $words[1];
+my $runconf;
 
 #run the script for multiple cores nTimes
 foreach my $workers (1,5,10,15,20,25,30,35,40,45,50,55,60,65) {
     my $sum = 0;
-    my $runconf = "$pathBin $args $output $workers $pfworkers ";
+    $runconf = "$pathBin $args $output $workers $pfworkers ";
     print STDERR "Running $runconf \n";
     foreach my $time (1.. $times){
        my $res = `\\ssh mic0 $runconf 2>&1`;
@@ -55,9 +56,10 @@ foreach my $workers (1,5,10,15,20,25,30,35,40,45,50,55,60,65) {
     print "$workers, $avg\n";
     print STDERR "\n";
 }
+print $runconf;
 
 
-
+#not used method
 sub getArguments{
     my $testType = $_[0];  #  seconf argument is the rype of test.
 

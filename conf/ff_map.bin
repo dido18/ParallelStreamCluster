@@ -1,5 +1,6 @@
 
 
 BIN_DIR="."
+#run_exec="${BIN_DIR}/bin/ff_streamcluster_map"
+run_exec="${BIN_DIR}/bin/ff_streamcluster"
 
-run_exec="${BIN_DIR}/bin/ff_streamcluster_map"

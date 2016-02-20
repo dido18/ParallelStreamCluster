@@ -12,7 +12,7 @@ Worker::Worker(int d, long kMIN, long kMAX, long centersz, long pf_workers):
 
 
 Points* Worker::svc(Points *points) {
-#ifndef NO_PRINT
+#ifdef PRINTINFO
     cout<<"Worker "<<get_my_id()<< ": received " << points->num <<"  points" << endl <<flush;
 #endif
    // cout<<"=== WORKERS RECEIvED ===="<< endl;
@@ -22,12 +22,12 @@ Points* Worker::svc(Points *points) {
     long k = sc.findCenters(points);
 
 
-#ifndef NO_PRINT
+#ifdef PRINTINFO
     cout<<"Worker " <<get_my_id()<<": finish local search"<<endl;
 #endif
     sc.contcenters(points);
 
-#ifndef NO_PRINT
+#ifdef PRINTINFO
     cout<<"Worker "<<get_my_id()<<": finished cont "<<endl;
 #endif
 
@@ -46,7 +46,7 @@ Points* Worker::svc(Points *points) {
    // centers->to_string();
    // cout<<" ==== END WORKERS CENTERS TO SEND:"<< endl;
 
-#ifndef NO_PRINT
+#ifdef PRINTINFO
     cout<<"Worker "<<get_my_id()<<": finish copy centers"<<endl;
 #endif
 

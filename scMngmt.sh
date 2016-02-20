@@ -2,11 +2,10 @@
 #--------------------------------------
 # scMngmt.sh  run binary with an input different times.
 #
-#
 #----------------------------------------
 mkdir -p run
 
-USAGE="usage: $0 [ff_map | ff_farm | parsec | rodinia] [simsmall | simmedum | simlarge | native] nWorkers nTimes "
+USAGE="usage: $0 [ff_map | ff_farm | rodinia] [simsmall | simmedum | simlarge | native] nWorkers nTimes "
 
 #check the number of input of the script
 if [ $# -lt 4 ];
@@ -26,15 +25,15 @@ RUN_ARGS=$run_args    #run_args contains the arguments for the programm
 
 case "$1" in
         "ff_farm")
-        	echo "Running ${1} of ${BINARY_PATH} ${RUN_ARGS}with ${3} farmWorker ${4} times..."
-		     for i in `seq 1 $5`;
-		     do
+        	echo "Running ${1} of ${BINARY_PATH} ${RUN_ARGS} with ${3} farmWorker ${4} times..."
+		    for i in `seq 1 $5`;
+		    do
 		          ${BINARY_PATH} ${RUN_ARGS} ${OUTPUT_PATH} ${3} 1
-             done
+            done
 
             ;;
         "ff_map")
-            echo "Running ${1} test of ${BINARY_PATH} ${RUN_ARGS}   with ${3} mapWorkers ${4} times..."
+            echo "Running ${1} test of ${BINARY_PATH} ${RUN_ARGS}  with ${3} mapWorkers ${4} times..."
         	for i in `seq 1 $4`;
         	    do
         	          ${BINARY_PATH} ${RUN_ARGS} ${OUTPUT_PATH} 1  ${3}

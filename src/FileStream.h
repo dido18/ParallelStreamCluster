@@ -34,7 +34,7 @@ public:
         return std::feof(fp);
     }
     ~FileStream() {
-#ifndef NO_PRINT
+#ifndef PRINTINFO
         printf("closing file stream\n");
 #endif
         fclose(fp);

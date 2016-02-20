@@ -128,6 +128,8 @@ int main(int argc, char **argv) {
     cout << fixed << time <<endl;// " : " << Helper::TIME_ARRIVAL << " : " << Helper::TIME_SERVICE << endl;
 
     delete stream;
+    delete emitter;
+    delete collector;
 
     return 0;
 

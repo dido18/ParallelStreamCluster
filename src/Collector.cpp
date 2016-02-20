@@ -11,7 +11,7 @@ using namespace ff;
 
 Points * Collector::svc(Points * centers) {
 
-#ifndef NO_PRINT
+#ifdef PRINTINFO
     cout <<"Collector has received "<< centers->num<<" centers "<<endl;
     //centers->to_string();
 #endif
@@ -58,18 +58,18 @@ void Collector::svc_end() {
 
     kFinal = sc.findCenters(finalCenters);
 
-#ifndef NO_PRINT
+#ifdef PRINTINFO
     cout<<"Collector finish local search on final centers " <<endl;
 #endif
     sc.contcenters(finalCenters);
 
-#ifndef NO_PRINT
+#ifdef PRINTINFO
     cout<<"Collector finish cont center:"<< endl;
     //finalCenters->to_string();
 #endif
     sc.myOutcenterIDs(finalCenters, outFile);
 
-#ifndef NO_PRINT
+#ifdef PRINTINFO
     cout<<"Collector " << finalCenters->num <<" points in "<<finalCenters->dim <<" dimension" <<endl;
 #endif
 
