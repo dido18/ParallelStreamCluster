@@ -34,8 +34,6 @@ struct pkmedian_arg_t {
 
 class UtilClusters {
 
-    static int PFGRAIN;
-    static int PFWORKERS;
     static int nproc;
 
     float dist(Point p1, Point p2, int dim);
@@ -61,22 +59,16 @@ class UtilClusters {
     float pFL(Points *points, int *feasible, int numfeasible, float z, long *k, double cost, long iter, float e, int pid,
               pthread_barrier_t *barrier);
 
-    ParallelFor pf;
-    ParallelForReduce<double> pfr;
-
-    int pfWorkers;
-
     bool *switch_membership; //whether to switch membership in pgain
     bool *is_center; //whether a point is a center
     int *center_table; //index table of centers
 
     //float *block;
     int c, d;
-    long kmin, kmax, chunksize;
-   // int dim;
+    long kmin, kmax;
 
 public:
-    UtilClusters(int pf_workers, long kmin, long kmax); //long kMin, long kMax,
+    UtilClusters(long kmin, long kmax); //long kMin, long kMax,
     ~UtilClusters() {};
 
 

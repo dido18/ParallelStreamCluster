@@ -20,9 +20,8 @@ public:
     long chunksize;
     int dim;
     long IDoffset = 0;   // Count the points read from the stream.
-    UtilClusters sc;
 
-    Emitter (PStream * Stream, long cksize, long d, long kmin, long kmax, int pf_workers);
+    Emitter (PStream * Stream, long cksize, long d);
 
     Points *svc (Points *);
 

@@ -27,7 +27,7 @@ my $times = $ARGV[1];
 
 
 my $output = "farm.$test_type.mic";
-my $pathBin = "./ff_streamcluster_mic ";
+my $pathBin = "./bin/ff_streamcluster ";
 
 #pfworkers set equal to one
 my $pfworkers=1;
@@ -37,16 +37,9 @@ my $filename = "conf/$test_type.runconf";
 open(my $fh, '<:encoding(UTF-8)', $filename)  or die "Could not open file '$filename' $!";
 my $line = <$fh>;   # read the first line
 my @words = split /["]/, $line;
-
 close($fh);
 
-my @split= split / / ,$words[1];   # [4] chunksize
-$split[4] = 512;          # same chunk as number of points
-
-my $args = "@split";
-
-#my $args = $words[1];
-
+my $args = $words[1];
 my $runconf;
 
 #run the script for multiple cores nTimes
@@ -55,7 +48,8 @@ foreach my $workers (1,5,10,15,20,25,30,35,40,45,50,55,60,65) {
     $runconf = "$pathBin $args $output $workers $pfworkers ";
     print STDERR "Running $runconf \n";
     foreach my $time (1.. $times){
-       my $res = `\\ssh mic0 $runconf 2>&1`;
+      # my $res = `\\ssh mic0 $runconf 2>&1`;
+        my $res = `$runconf 2>&1`;
         print STDERR "$res ";
         $sum = $sum + $res;
     }

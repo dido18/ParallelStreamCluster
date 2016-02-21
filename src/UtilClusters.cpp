@@ -18,14 +18,12 @@
 //#define PROFILE // comment this out to disable instrumentation code
 //#define ENABLE_THREADS  // comment this out to disable threads
 //#define INSERT_WASTE //uncomment this to insert waste computation into dist function
-#define FASTFLOW
+//#define FASTFLOW
 
 #define CACHE_LINE 512 // cache line in byte
 
-//int PFGRAIN = 0;
-int UtilClusters::PFGRAIN = 0;
-//int UtilClusters::PFWORKERS = 1;
-int UtilClusters::nproc = 1;
+
+int UtilClusters::nproc = 1; // original algorithm with only 1 thread
 
 // instrumentation code
 #ifdef PROFILE
@@ -39,7 +37,7 @@ int UtilClusters::nproc = 1;
 #endif
 
 
-UtilClusters::UtilClusters(int pf_workers, long kMin, long kMax): pfWorkers{pf_workers}, kmin{kMin}, kmax{kMax} {}
+UtilClusters::UtilClusters(long kMin, long kMax): kmin{kMin}, kmax{kMax} {}
 
 long UtilClusters::findCenters(Points *points) {
 

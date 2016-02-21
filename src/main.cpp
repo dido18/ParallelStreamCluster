@@ -7,7 +7,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <memory>
-#include <string>
 
 #include "PStream.h"
 #include "SimStream.h"
@@ -37,8 +36,8 @@ int main(int argc, char **argv) {
     int d = 0;
 
 
-    if (argc<11) {
-        fprintf(stderr,"usage: %s k1 k2 d n chunksize clustersize infile outfile farmWorkers mapWorkers \n",  argv[0]);
+    if (argc<10) {
+        fprintf(stderr,"usage: %s k1 k2 d n chunksize clustersize infile outfile farmWorkers \n",  argv[0]);
         fprintf(stderr,"  k1:          Min. number of centers allowed\n");
         fprintf(stderr,"  k2:          Max. number of centers allowed\n");
         fprintf(stderr,"  d:           Dimension of each data point\n");
@@ -48,7 +47,6 @@ int main(int argc, char **argv) {
         fprintf(stderr,"  infile:      Input file (if n<=0)\n");
         fprintf(stderr,"  outfile:     Derives: outfile results, and outfile_times storing the execution times\n");
         fprintf(stderr,"  farmWorkers: Number of workers to use in the farm\n");
-        fprintf(stderr,"  pfWorkers:   Number of workers to use in the parallel for\n");
         fprintf(stderr,"\n");
         fprintf(stderr, "if n > 0, points will be randomly generated instead of reading from infile.\n");
         exit(1);
@@ -63,7 +61,7 @@ int main(int argc, char **argv) {
     strcpy(outfilename, argv[8]);
 
     int farmWorkers = atoi(argv[9]);
-    long pfWorkers =  atoi(argv[10]);
+    long pfWorkers =  5;
 
     srand48(SEED);
 
@@ -74,8 +72,9 @@ int main(int argc, char **argv) {
         stream = new FileStream(infilename);
     }
 
+
     // emitter produces the stream of chuncksize points
-    Emitter *emitter = new Emitter(stream, chunksize, dim, kmin, kmax, pfWorkers);
+    Emitter *emitter = new Emitter(stream, chunksize, dim);
 
     //collector
     Collector *collector = new Collector(clustersize, dim, kmin, kmax, pfWorkers,outfilename);
@@ -83,7 +82,7 @@ int main(int argc, char **argv) {
     //farm
     std::vector<ff_node *> Workers;
     for(int i =0; i < farmWorkers; ++i ) {
-        Workers.push_back(new Worker(dim,kmin,kmax,clustersize,pfWorkers)); //pass olso PFGRAIN ??
+        Workers.push_back(new Worker(dim, kmin, kmax, clustersize )); //pass olso PFGRAIN ??
     }
     ff_farm<> myFarm(Workers,emitter,collector);
 

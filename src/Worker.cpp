@@ -5,8 +5,8 @@
 #include "Worker.h"
 
 
-Worker::Worker(int d, long kMIN, long kMAX, long centersz, long pf_workers):
-        dim{d}, kmin{kMIN}, kmax{kMAX}, centersize{centersz}, sc(pf_workers, kmin, kmax){ };
+Worker::Worker(int d, long kMIN, long kMAX, long centersz ):
+        dim{d}, kmin{kMIN}, kmax{kMAX}, centersize{centersz}, sc(kmin, kmax){ };
 
 
 

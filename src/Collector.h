@@ -20,7 +20,7 @@ public:
     char * outFile;
 
     Collector(long clustersz, int dim, long kmin, long kmax, int pf_workers, char *out):
-            clustersize{clustersz}, finalCenters(new Points(dim, clustersz)), sc(pf_workers, kmin, kmax), outFile(out){
+            clustersize{clustersz}, finalCenters(new Points(dim, clustersz)), sc(kmin, kmax), outFile(out){
 
             centerBlock = (float*)malloc(clustersize*dim*sizeof(float));
 

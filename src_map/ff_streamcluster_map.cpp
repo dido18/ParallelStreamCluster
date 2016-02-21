@@ -1377,7 +1377,7 @@ int main(int argc, char **argv)
     double t2 = gettime();
     double time = t2-t1;
 
-    printf("time = %lf\n",time);
+    printf("%lf\n",time);
 
     delete stream;
 #ifdef PROFILE

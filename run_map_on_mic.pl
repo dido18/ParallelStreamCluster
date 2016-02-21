@@ -33,15 +33,17 @@ my $workers=1;
 my $filename = "conf/$test_type.runconf";
 open(my $fh, '<:encoding(UTF-8)', $filename)  or die "Could not open file '$filename' $!";
 my $line = <$fh>;   # read the first line
-my @words = split /["]/, $line;
 close($fh);
+
+my @words = split /["]/, $line;
 
 my $args = $words[1];
 
+my $runconf;
 #run the script for multiple cores nTimes
 foreach my $pfworkers (1,5,10,15,20,25,30,35,40,45,50,55,60,65) {
     my $sum = 0;
-    my $runconf = "$pathBin $args $output $workers $pfworkers ";
+     $runconf = "$pathBin $args $output $workers $pfworkers ";
     print STDERR "Running $runconf \n";
     foreach my $time (1.. $times){
         my $res = `\\ssh mic0 $runconf 2>&1`;

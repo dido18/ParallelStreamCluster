@@ -24,7 +24,7 @@ public:
     UtilClusters sc;
 
 
-    Worker(int d, long kMIN, long kMAX, long centersz, long pf_workers);
+    Worker(int d, long kMIN, long kMAX, long centersz);
 
     Points * svc(Points * p);
 

@@ -12,8 +12,8 @@
 using namespace std;
 using namespace ff;
 
-Emitter::Emitter(PStream *Stream, long cksize, long d, long kmin, long kmax, int pf_workers) :
-        stream(Stream), chunksize(cksize), dim(d), sc(pf_workers, kmin, kmax) { }
+Emitter::Emitter(PStream *Stream, long cksize, long d) :
+        stream(Stream), chunksize(cksize), dim(d) { }
 
 Points *Emitter::svc(Points *p) {
 
@@ -66,7 +66,6 @@ Points *Emitter::svc(Points *p) {
             break;
         }
     }
-
 
     return EOS;   // the stream is finished
 };
