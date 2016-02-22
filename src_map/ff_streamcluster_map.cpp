@@ -51,8 +51,8 @@ int  PFGRAIN = 0;     //dafualt static scheduling of iterations
 #define CACHE_LINE 512 // cache line in byte
 
 #ifdef FASTFLOW
-    ParallelFor pf();//FF_AUTO, true);
-    ParallelForReduce<double> pfr();//;FF_AUTO, true);
+    ParallelFor pf;
+    ParallelForReduce<double> pfr;
 #endif
 
 /* this structure represents a point */
