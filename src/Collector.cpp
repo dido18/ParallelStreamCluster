@@ -52,10 +52,6 @@ void Collector::svc_end() {
 
     long kFinal;
 
-    //cout<< "=======Collector final points ===================="<< endl;
-    ///finalCenters->to_string();
-   // cout<< "======= end collector final points ================"<< endl;
-
     kFinal = sc.findCenters(finalCenters);
 
 #ifdef PRINTINFO
@@ -65,7 +61,6 @@ void Collector::svc_end() {
 
 #ifdef PRINTINFO
     cout<<"Collector finish cont center:"<< endl;
-    //finalCenters->to_string();
 #endif
     sc.myOutcenterIDs(finalCenters, outFile);
 

@@ -15,11 +15,8 @@ Points* Worker::svc(Points *points) {
 #ifdef PRINTINFO
     cout<<"Worker "<<get_my_id()<< ": received " << points->num <<"  points" << endl <<flush;
 #endif
-   // cout<<"=== WORKERS RECEIvED ===="<< endl;
-   // points->to_string();
-   // cout<<" = =====   END WORKERS RECEIvED ===:"<< endl;
 
-    long k = sc.findCenters(points);
+ long k = sc.findCenters(points);
 
 
 #ifdef PRINTINFO
@@ -41,10 +38,6 @@ Points* Worker::svc(Points *points) {
     }
 
     sc.mycopycenters(points, centers);
-
-   // cout<<" ===== WORKERS CENTERS TO SEND:"<< endl;
-   // centers->to_string();
-   // cout<<" ==== END WORKERS CENTERS TO SEND:"<< endl;
 
 #ifdef PRINTINFO
     cout<<"Worker "<<get_my_id()<<": finish copy centers"<<endl;

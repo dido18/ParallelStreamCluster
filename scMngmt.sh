@@ -1,21 +1,24 @@
 #!/bin/bash
 #--------------------------------------
-# scMngmt.sh  run binary with an input different times.
+# scMngmt.sh
+#     Reads in the conf/ directory the binary path and the parameters.
+#     Runs the specific parallel version (ff_map or ff_farm) with an input type.
 #
 #----------------------------------------
 mkdir -p run
 
-USAGE="usage: $0 [ff_map | ff_farm | rodinia] [simsmall | simmedum | simlarge | native] nWorkers nTimes "
+USAGE="Runs the parallel versions on the host/local machine
+     \n usage:  \n\t$0 [ff_map | ff_farm] [ simmedum | simlarge | native] nWorkers nTimes "
 
 #check the number of input of the script
 if [ $# -lt 4 ];
    then
-   echo ${USAGE}
+   echo -e ${USAGE}
    exit 1
 fi
 
 
-OUTPUT_PATH="./run/$1.$2.out"           #is utilized for the output and for the times results (appends _tests in the main)
+OUTPUT_PATH="./run/$1.$2.out"   #is utilized for the output and for the times results.
 
 source "conf/$1.bin"   #load the binary path from the file in the  conf/ folder
 BINARY_PATH=$run_exec  #run_exec contains the path of the binary file of the first argument
@@ -28,7 +31,7 @@ case "$1" in
         	echo "Running ${1} of ${BINARY_PATH} ${RUN_ARGS} with ${3} farmWorker ${4} times..."
 		    for i in `seq 1 $5`;
 		    do
-		          ${BINARY_PATH} ${RUN_ARGS} ${OUTPUT_PATH} ${3} 1
+		          ${BINARY_PATH} ${RUN_ARGS} ${OUTPUT_PATH} ${3}
             done
 
             ;;
@@ -36,18 +39,11 @@ case "$1" in
             echo "Running ${1} test of ${BINARY_PATH} ${RUN_ARGS}  with ${3} mapWorkers ${4} times..."
         	for i in `seq 1 $4`;
         	    do
-        	          ${BINARY_PATH} ${RUN_ARGS} ${OUTPUT_PATH} 1  ${3}
+        	          ${BINARY_PATH} ${RUN_ARGS} ${OUTPUT_PATH} ${3}
                done
         ;;
-        "parsec" | "rodinia")
-		echo "Running ${1} test of ${BINARY_PATH} ${RUN_ARGS} with ${3} threads ${4} times ..."
-		 for i in `seq 1 $5`;
-        	do
-        	   ${BINARY_PATH} ${RUN_ARGS} ${OUTPUT_PATH} ${3}    # run rodinia or parsec with nthreads
-            done
-            ;;
         *)
-         echo ${USAGE}
+         echo -e ${USAGE}
          exit 1
 esac
 

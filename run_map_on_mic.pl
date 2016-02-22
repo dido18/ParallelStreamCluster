@@ -3,11 +3,14 @@ use strict;
 use warnings FATAL => 'all';
 
 =pod
-    run the map parallel version  setting workers=1 on the mic with incremental numbers of pfworkers.
-    Each configurarion is runned mutiple times as specified by "nTimes" input.
-    For Storing the average of the completion time redirect the script.
+    Runs the map parallel version in the mic0 with incremental numbers of workers.
+    Each configuration is runned "nTimes" times as specified by  parameter.
+    The script return the average time among the nTimes execution and the number
+    of workers used.
+
     es:
-      perl run_map_on_mic.pl simlarge 4 > testResults/farm.output.mic
+      perl run_map_on_mic.pl simlarge 4 > testResults/farm.simlarge.mic
+
 =cut
 
 my $usage="$0 [simmedium | simlarge | native]  nTimes \n";
@@ -24,10 +27,8 @@ my $times = $ARGV[1];
 
 
 my $output = "map.$test_type.mic";
-my $pathBin = "./ff_streamcluster_mic ";
+my $pathBin = "./ff_streamcluster_map_mic ";
 
-#pfworkers set equal to one
-my $workers=1;
 
 #load the conf file args.
 my $filename = "conf/$test_type.runconf";
@@ -43,7 +44,7 @@ my $runconf;
 #run the script for multiple cores nTimes
 foreach my $pfworkers (1,5,10,15,20,25,30,35,40,45,50,55,60,65) {
     my $sum = 0;
-     $runconf = "$pathBin $args $output $workers $pfworkers ";
+     $runconf = "$pathBin $args $output $pfworkers ";
     print STDERR "Running $runconf \n";
     foreach my $time (1.. $times){
         my $res = `\\ssh mic0 $runconf 2>&1`;

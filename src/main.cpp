@@ -84,8 +84,25 @@ int main(int argc, char **argv) {
     for(int i =0; i < farmWorkers; ++i ) {
         Workers.push_back(new Worker(dim, kmin, kmax, clustersize )); //pass olso PFGRAIN ??
     }
+
     ff_farm<> myFarm(Workers,emitter,collector);
 
+
+    double t1 = Helper::gettime();
+    if (myFarm.run_and_wait_end()<0) {
+        error("running Farm\n");
+        return -1;
+    }
+    double t2 = Helper::gettime();
+
+    double time = t2-t1;
+
+    cout.precision(10);
+    cout << fixed << time <<endl;// " : " << Helper::TIME_ARRIVAL << " : " << Helper::TIME_SERVICE << endl;
+
+    delete stream;
+    delete emitter;
+    delete collector;
     /*
     vector<unique_ptr<ff_node>> Workers;
     ff_Farm<> myFarm ([&](){
@@ -94,8 +111,6 @@ int main(int argc, char **argv) {
         }
         return Workers;
     }());
-*/
-/*
     // workers finds the  medians in the stream received.
     vector<unique_ptr<ff_node>> Workers;
 
@@ -114,21 +129,6 @@ int main(int argc, char **argv) {
     //Pipe of farm and my collector
     //ff_Pipe<Points> myPipe(myFarm, Collector);
 
-    double t1 = Helper::gettime();
-    if (myFarm.run_and_wait_end()<0) {
-        error("running Farm\n");
-        return -1;
-    }
-    double t2 = Helper::gettime();
-
-    double time = t2-t1;
-
-    cout.precision(10);
-    cout << fixed << time <<endl;// " : " << Helper::TIME_ARRIVAL << " : " << Helper::TIME_SERVICE << endl;
-
-    delete stream;
-    delete emitter;
-    delete collector;
 
     return 0;
 

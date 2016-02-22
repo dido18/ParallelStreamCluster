@@ -24,7 +24,7 @@ Points *Emitter::svc(Points *p) {
             fprintf(stderr, "not enough memory for a chunk!\n");
             exit(1);
         }
-///         unique_ptr<Points> points(new Points(dim, chunksize));
+
         Points *points = new Points(dim, chunksize);
 
         for (int i = 0; i < chunksize; i++) {
@@ -37,10 +37,6 @@ Points *Emitter::svc(Points *p) {
             break;
         }
 
-        //dido
-      //  for (int i = 0; i < chunksize * dim; ++i) {
-       //     cout << i << " " << block[i] << endl;
-       // }
 #ifdef PRINTINFO
         cout << "Emitter reads  " << numRead << " points" << endl << flush;
 #endif
@@ -55,9 +51,6 @@ Points *Emitter::svc(Points *p) {
             points->p[i].weight = 1.0;
             points->p[i].ID = IDoffset + i;
         }
-        //cout<< "======= emitter points ===================="<< endl;
-        //points->to_string();
-        //cout<< "======= end emitter points ================"<< endl;
 
         IDoffset += numRead;
 

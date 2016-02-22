@@ -51,8 +51,8 @@ int  PFGRAIN = 0;     //dafualt static scheduling of iterations
 #define CACHE_LINE 512 // cache line in byte
 
 #ifdef FASTFLOW
-    ParallelFor pf;
-    ParallelForReduce<double> pfr;
+    ParallelFor pf(FF_AUTO, true);
+    ParallelForReduce<double> pfr(FF_AUTO, true);
 #endif
 
 /* this structure represents a point */
@@ -501,9 +501,7 @@ double pgain(long x, Points *points, double z, long int *numcenters, int pid, pt
             lower[center_table[assign]] += current_cost - x_cost;
         }
     };
-
-    //
-    pfr.parallel_reduce(cost_of_opening_x, 0.0 , k1, k2, 1, PFGRAIN, bodyF, reduceF,PFWORKERS);
+    pfr.parallel_reduce(cost_of_opening_x, 0.0 , k1, k2, 1, PFGRAIN, bodyF, reduceF, PFWORKERS);
 
 #else // ORIGIANL COMPUTATION
     #

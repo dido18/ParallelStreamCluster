@@ -5,6 +5,14 @@
 #include <memory>
 #include <string.h>
 
+/*
+*usage :
+*    ./generateInput numPoints dim outfilename
+ *
+*       generates a "numPoints" number of points each one of "dim" dimension.
+ *      The points generated are sotre into "outfilename".
+*
+*/
 
 using namespace std;
 int MAXNAMESIZE = 100;
@@ -36,15 +44,7 @@ int main(int argc, char **argv){
   fwrite(num, sizeof(float)*DIM, NUM, fp);
 
   fclose(fp);
-  /*
-  fp = fopen( "test", "r");
-  num = (float*)malloc(sizeof(float)*DIM*NUM);
-  fread(num, sizeof(float)*DIM, NUM, fp);
 
-  for (int i=0;i<DIM*NUM;i++)
-    cout << num[i] << endl;
-
-  fclose(fp);*/
   free(num);
   return 0;
 }
