@@ -1,6 +1,0 @@
-run_args="10 20 32 4096 128 1000 none "
-#run_args="10 20 32 4096 4096 1000 none "
-
-# simsmall.runconf - file containing information necessary to run a specific
-
-

@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
         fprintf(stderr,"  chunksize:   Number of data points to handle per step\n");
         fprintf(stderr,"  clustersize: Maximum number of intermediate centers\n");
         fprintf(stderr,"  infile:      Input file (if n<=0)\n");
-        fprintf(stderr,"  outfile:     Derives: outfile results, and outfile_times storing the execution times\n");
+        fprintf(stderr,"  outfile:     outfile results\n");
         fprintf(stderr,"  farmWorkers: Number of workers to use in the farm\n");
         fprintf(stderr,"\n");
         fprintf(stderr, "if n > 0, points will be randomly generated instead of reading from infile.\n");
