@@ -24,14 +24,12 @@ set(SOURCE_FILES
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
-#ff_farm version with print info (host)
-add_executable(ff_streamcluster_farm ${SOURCE_FILES} rodinia_streamcluster/streamcluster_original.cpp)
+
+#ff_farm version with print info (HOST)
+add_executable(ff_streamcluster_farm ${SOURCE_FILES})
 target_compile_definitions(ff_streamcluster_farm  PRIVATE NO_DEFAULT_MAPPING=1  PRINTINFO) #PRINTINFO PROFILE=1
 
-#add_executable(ff_streamcluster_farm_print ${SOURCE_FILES})
-#target_compile_definitions(ff_streamcluster_farm_print  PRIVATE NO_DEFAULT_MAPPING=1  PRINTINFO) #PRINTINFO PROFILE=1
-
-#ff_map parallel on host
+#ff_map parallel on HOST
 add_executable(ff_streamcluster_map "${CMAKE_CURRENT_SOURCE_DIR}/src_map/ff_streamcluster_map.cpp")
 target_compile_definitions(ff_streamcluster_map  PRIVATE NO_DEFAULT_MAPPING=1  PRINTINFO)
 
@@ -55,7 +53,7 @@ add_custom_command(TARGET ff_streamcluster_map_mic POST_BUILD COMMAND scp "${CMA
 add_executable(rodinia_orig "${CMAKE_CURRENT_SOURCE_DIR}/rodinia_streamcluster/streamcluster_original.cpp")
 target_compile_definitions(rodinia_orig  PRIVATE PROFILE=1)
 
-#rodinia parallel mic version
+#rodinia parallel MIC
 add_executable(rodinia_mic "${CMAKE_CURRENT_SOURCE_DIR}/rodinia_streamcluster/streamcluster_original.cpp")
 set_target_properties(rodinia_mic PROPERTIES COMPILE_FLAGS "-mmic" )
 set_target_properties(rodinia_mic PROPERTIES LINK_FLAGS "-mmic" )

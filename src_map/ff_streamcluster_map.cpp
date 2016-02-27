@@ -38,6 +38,7 @@ using namespace ff;
 #define ITER 3 // iterate ITER* k log k times; ITER >= 1
 
 //#define PRINTINFO //comment this out to disable output
+//#define PRINT_DETAILS
 //#define PROFILE // comment this out to disable instrumentation code
 //#define ENABLE_THREADS  // comment this out to disable threads
 //#define INSERT_WASTE //uncomment this to insert waste computation into dist function
@@ -226,7 +227,7 @@ float pspeedy(Points *points, float z, long *kcenter, int pid, pthread_barrier_t
   static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 #endif
 
-#ifdef PRINTINFO
+#ifdef PRINT_DETAILS
     if( pid == 0 ){
     fprintf(stderr, "Speedy: facility cost %lf\n", z);
   }
@@ -331,7 +332,7 @@ float pspeedy(Points *points, float z, long *kcenter, int pid, pthread_barrier_t
     pthread_barrier_wait(barrier);
 #endif
 
-#ifdef PRINTINFO
+#ifdef PRINT_DETAILS
     if( pid == 0 )
     {
       fprintf(stderr, "Speedy opened %d facilities for total cost %lf\n",
@@ -712,7 +713,7 @@ float pFL(Points *points, int *feasible, int numfeasible,
         }
 
         cost -= change;
-#ifdef PRINTINFO
+#ifdef PRINT_DETAILS
         if( pid == 0 ) {
       fprintf(stderr, "%d centers, cost %lf, total distance %lf\n",
 	      *k, cost, cost - z*(*k));
@@ -825,7 +826,7 @@ float pkmedian(Points *points, long kmin, long kmax, long* kfinal,
     long k2 = k1 + bsize;
     if( pid == nproc-1 ) k2 = points->num;
 
-#ifdef PRINTINFO
+#ifdef PRINT_DETAILS
     if( pid == 0 )
     {
       printf("Starting Kmedian procedure\n");
@@ -871,7 +872,7 @@ float pkmedian(Points *points, long kmin, long kmax, long* kfinal,
     if( pid == 0 ) shuffle(points);
     cost = pspeedy(points, z, &k, pid, barrier);
 
-#ifdef PRINTINFO
+#ifdef PRINT_DETAILS
     if( pid == 0 )
     printf("thread %d: Finished first call to speedy, cost=%lf, k=%i\n",pid,cost,k);
 #endif
@@ -882,13 +883,13 @@ float pkmedian(Points *points, long kmin, long kmax, long* kfinal,
         i++;
     }
 
-#ifdef PRINTINFO
+#ifdef PRINT_DETAILS
     if( pid==0)
     printf("thread %d: second call to speedy, cost=%lf, k=%d\n",pid,cost,k);
 #endif
     /* if still not enough facilities, assume z is too high */
     while (k < kmin) {
-#ifdef PRINTINFO
+#ifdef PRINT_DETAILS
         if( pid == 0 ) {
       printf("%lf %lf\n", loz, hiz);
       printf("Speedy indicates we should try lower z\n");
@@ -919,7 +920,7 @@ float pkmedian(Points *points, long kmin, long kmax, long* kfinal,
 
     while(1) {
         d++;
-#ifdef PRINTINFO
+#ifdef PRINT_DETAILS
         if( pid==0 )
       {
 	printf("loz = %lf, hiz = %lf\n", loz, hiz);
@@ -937,7 +938,7 @@ float pkmedian(Points *points, long kmin, long kmax, long* kfinal,
         if (((k <= (1.1)*kmax)&&(k >= (0.9)*kmin))||
             ((k <= kmax+2)&&(k >= kmin-2))) {
 
-#ifdef PRINTINFO
+#ifdef PRINT_DETAILS
             if( pid== 0)
 	{
 	  printf("Trying a more accurate local search...\n");
@@ -1306,6 +1307,9 @@ void streamCluster( PStream* stream,
     localSearch( &centers, kmin, kmax ,&kfinal );
     contcenters(&centers);
     outcenterIDs( &centers, centerIDs, outfile);
+#ifdef PRINTINFO
+    printf("%ld final  centers\n", centers.num);
+#endif
 }
 
 
