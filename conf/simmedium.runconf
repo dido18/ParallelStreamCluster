@@ -1,7 +1,4 @@
 run_args="10 20 128 16384 512 2000 none "
-# true input used
-
-#run_args="10 20 128 102400 512 5000 none "  # 200 chunks fo farm testS
 
 #run_args="10 20 64 8192 128 2000 none"
 #run_args="10 20 64 8192 8192 1000 none "

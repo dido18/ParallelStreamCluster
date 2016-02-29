@@ -110,7 +110,7 @@ double gettime() {
 }
 
 int isIdentical(float *i, float *j, int D)
-// tells whether two points of D dimensions are identical
+// tells whether two points of D  D dimensions are identical
 {
     int a = 0;
     int equal = 1;
@@ -1321,8 +1321,8 @@ int main(int argc, char **argv)
     int dim;
 
     /*int numthreads;*/
-    c = 0;
-    d = 0;
+    c = 0;  // number of times is called pgain
+    d = 0;  // in pkmedian while()  =
 
 
     if (argc<10) {
@@ -1391,6 +1391,7 @@ int main(int argc, char **argv)
    printf("time pshuffle = %lf\n", time_shuffle);
    printf("time localSearch = %lf\n", time_local_search);
    printf("loops=%d\n", d);
+   printf("pgain calls=%d\n", c);
 #endif
     return 0;
 }

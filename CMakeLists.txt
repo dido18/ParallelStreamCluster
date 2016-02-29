@@ -27,11 +27,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
 #ff_farm version with print info (HOST)
 add_executable(ff_streamcluster_farm ${SOURCE_FILES})
-target_compile_definitions(ff_streamcluster_farm  PRIVATE NO_DEFAULT_MAPPING=1  PRINTINFO) #PRINTINFO PROFILE=1
+target_compile_definitions(ff_streamcluster_farm  PRIVATE NO_DEFAULT_MAPPING=1 PRINTINFO) #PRINTINFO PROFILE=1
 
 #ff_map parallel on HOST
 add_executable(ff_streamcluster_map "${CMAKE_CURRENT_SOURCE_DIR}/src_map/ff_streamcluster_map.cpp")
-target_compile_definitions(ff_streamcluster_map  PRIVATE NO_DEFAULT_MAPPING=1  PRINTINFO)
+target_compile_definitions(ff_streamcluster_map  PRIVATE NO_DEFAULT_MAPPING=1  PROFILE PRINTINFO)
 
 # ff_farm version on MIC
 add_executable(ff_streamcluster_farm_mic  ${SOURCE_FILES})
