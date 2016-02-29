@@ -50,12 +50,12 @@ add_custom_command(TARGET ff_streamcluster_map_mic POST_BUILD COMMAND scp "${CMA
 
 
 #rodinia parallel with print (host)
-add_executable(rodinia_orig "${CMAKE_CURRENT_SOURCE_DIR}/rodinia_streamcluster/streamcluster_original.cpp")
-target_compile_definitions(rodinia_orig  PRIVATE PROFILE=1)
+#add_executable(rodinia_orig "${CMAKE_CURRENT_SOURCE_DIR}/rodinia_streamcluster/streamcluster_original.cpp")
+#target_compile_definitions(rodinia_orig  PRIVATE PROFILE=1)
 
 #rodinia parallel MIC
-add_executable(rodinia_mic "${CMAKE_CURRENT_SOURCE_DIR}/rodinia_streamcluster/streamcluster_original.cpp")
-set_target_properties(rodinia_mic PROPERTIES COMPILE_FLAGS "-mmic" )
-set_target_properties(rodinia_mic PROPERTIES LINK_FLAGS "-mmic" )
-target_compile_definitions(rodinia_mic PRIVATE PROFILE=1 )
-add_custom_command(TARGET rodinia_mic POST_BUILD COMMAND scp "${CMAKE_CURRENT_SOURCE_DIR}/bin/rodinia_mic" mic0:)
+#add_executable(rodinia_mic "${CMAKE_CURRENT_SOURCE_DIR}/rodinia_streamcluster/streamcluster_original.cpp")
+#set_target_properties(rodinia_mic PROPERTIES COMPILE_FLAGS "-mmic" )
+#set_target_properties(rodinia_mic PROPERTIES LINK_FLAGS "-mmic" )
+#target_compile_definitions(rodinia_mic PRIVATE PROFILE=1 )
+#add_custom_command(TARGET rodinia_mic POST_BUILD COMMAND scp "${CMAKE_CURRENT_SOURCE_DIR}/bin/rodinia_mic" mic0:)
